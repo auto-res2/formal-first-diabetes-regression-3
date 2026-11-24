@@ -171,9 +171,9 @@
     {
       "id": "C10",
       "group": "宣言 / リポジトリの版",
-      "explanation": "リポジトリの版: このリポジトリの commit 0000000000000000000000000000000000000000 を使用する。\n- 実行に関するもの（実験コード，ライブラリの版を固定するファイル，Python の版を含む実行のコマンド）は，すべてこの commit にある",
-      "definitions": "def repositoryCommit : String := \"0000000000000000000000000000000000000000\"",
-      "proposition": "abbrev C10 : Prop := repositoryCommit = \"0000000000000000000000000000000000000000\"",
+      "explanation": "リポジトリの版: このリポジトリの commit 275ea5c7e3c531c57f202ad76609d8234a55fe46 を使用する。\n- 実行に関するもの（実験コード，ライブラリの版を固定するファイル，Python の版を含む実行のコマンド）は，すべてこの commit にある",
+      "definitions": "def repositoryCommit : String := \"275ea5c7e3c531c57f202ad76609d8234a55fe46\"",
+      "proposition": "abbrev C10 : Prop := repositoryCommit = \"275ea5c7e3c531c57f202ad76609d8234a55fe46\"",
       "main": false,
       "kind": "declaration",
       "verifier": "Lean"
