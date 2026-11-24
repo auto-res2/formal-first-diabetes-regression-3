@@ -3,8 +3,8 @@ import Mathlib
 研究の指示: Efron らの糖尿病データセットに線形回帰モデルを当てはめ，テストデータに対する MSE が 3400 を下回るかを調べる。
 
 実験の前に宣言するもの。claim 1 つが命題 1 つで，命題の名前が claim の ID。
-ID はツリーの順（C00 → メインの claim → 宣言 → 信頼性条件）に振る。
-ファイルの中の並びは，Lean が使う前に宣言を求めるので，この順ではない（C00 と C13 が後ろに来る）。
+ID はツリーの順（C00 → メインの claim → MSE を得る手順 → 宣言 → 信頼性条件）に振る。
+ファイルの中の並びは，Lean が使う前に宣言を求めるので，この順ではない（C02 が宣言の後に，公理が C14〜C37 の後に，C00 が最後に来る）。
 検証器が取る値は，命題の引数で受ける。
 
 既存のライブラリにある計算は，数学的な定義を書かず，そのライブラリの関数として置く。
@@ -34,12 +34,12 @@ opaque efronDatasetSha256 : String
 - 配布元の URL から取得する
 - 取得するファイルの SHA-256 を固定する
 - 442 件，説明変数は 10 個（AGE，SEX，BMI，BP，S1〜S6），目的変数は Y -/
-abbrev C02 : Prop :=
+abbrev C03 : Prop :=
   datasetUrl = "https://www4.stat.ncsu.edu/~boos/var.select/diabetes.tab.txt" ∧
   datasetSha256 = "4733febee697862c22139cdac87478a300ce0d101593deb07ed6c0f3328a99cd" ∧
   sampleCount = 442 ∧ featureCount = 10 ∧
   featureColumns = ["AGE", "SEX", "BMI", "BP", "S1", "S2", "S3", "S4", "S5", "S6"] ∧ targetColumn = "Y"
-theorem C02_holds : C02 := ⟨rfl, rfl, rfl, rfl, rfl, rfl⟩
+theorem C03_holds : C03 := ⟨rfl, rfl, rfl, rfl, rfl, rfl⟩
 
 /-! ### 読み込み -/
 
@@ -56,10 +56,10 @@ def target : Fin sampleCount → ℝ := loadedTarget loadArguments
 /-- 読み込み: numpy.loadtxt を，skiprows=1 で使用する。
 - 1〜10 列目を説明変数，11 列目を目的変数とする
 - 読み込んだ値は加工しない -/
-abbrev C03 : Prop :=
+abbrev C04 : Prop :=
   loadFunction = "numpy.loadtxt" ∧ loadArguments = [("skiprows", "1")] ∧
   features = loadedFeatures [("skiprows", "1")] ∧ target = loadedTarget [("skiprows", "1")]
-theorem C03_holds : C03 := ⟨rfl, rfl, rfl, rfl⟩
+theorem C04_holds : C04 := ⟨rfl, rfl, rfl, rfl⟩
 
 /-! ### 分割 -/
 
@@ -74,11 +74,11 @@ def trainRows : Finset (Fin sampleCount) := testRowsᶜ
 /-- 分割: train_test_split を，シード 0（random_state=0），テストデータの割合 20%（test_size=0.2）で使用する。
 - ほかの引数は渡さない
 - テストデータ以外の行を訓練データとする -/
-abbrev C04 : Prop :=
+abbrev C05 : Prop :=
   splitFunction = "sklearn.model_selection.train_test_split" ∧
   splitArguments = [("test_size", "0.2"), ("random_state", "0")] ∧
   testRows = trainTestSplit [("test_size", "0.2"), ("random_state", "0")] ∧ trainRows = testRowsᶜ
-theorem C04_holds : C04 := ⟨rfl, rfl, rfl, rfl⟩
+theorem C05_holds : C05 := ⟨rfl, rfl, rfl, rfl⟩
 
 /-! ### 当てはめ -/
 
@@ -98,12 +98,12 @@ noncomputable def fittedModel : FittedModel := fit fitParameters trainRows featu
 /-- 当てはめ: LinearRegression.fit を使用する。
 - LinearRegression には引数を渡さない（パラメータは既定値）
 - 訓練データの説明変数 10 個すべてと目的変数を，そのまま渡す -/
-abbrev C05 : Prop :=
+abbrev C06 : Prop :=
   fitFunction = "sklearn.linear_model.LinearRegression.fit" ∧
   fitParameters =
     [("copy_X", "True"), ("fit_intercept", "True"), ("n_jobs", "None"), ("positive", "False"), ("tol", "1e-06")] ∧
   fittedModel = fit fitParameters trainRows features target
-theorem C05_holds : C05 := ⟨rfl, rfl, rfl⟩
+theorem C06_holds : C06 := ⟨rfl, rfl, rfl⟩
 
 /-! ### 予測 -/
 
@@ -114,25 +114,25 @@ noncomputable def prediction (i : Fin sampleCount) : ℝ := predict fittedModel 
 
 /-- 予測: LinearRegression.predict を使用する。
 - 当てはめたモデルに，説明変数をそのまま渡す -/
-abbrev C06 : Prop :=
+abbrev C07 : Prop :=
   predictFunction = "sklearn.linear_model.LinearRegression.predict" ∧
   prediction = fun i => predict fittedModel (features i)
-theorem C06_holds : C06 := ⟨rfl, rfl⟩
+theorem C07_holds : C07 := ⟨rfl, rfl⟩
 
 /-! ### MSE -/
 
 def mseFunction : String := "sklearn.metrics.mean_squared_error"
 /-- scikit-learn の mean_squared_error が返す値。 -/
-opaque meanSquaredError (rows : Finset (Fin sampleCount)) (target prediction : Fin sampleCount → ℝ) : ℝ
+opaque meanSquaredError (rows : Finset (Fin sampleCount)) (target prediction : Fin sampleCount → ℝ) : ℚ
 /-- 宣言したとおりに計算した，テストデータに対する MSE。 -/
-noncomputable def specifiedTestMse : ℝ := meanSquaredError testRows target prediction
+noncomputable def specifiedTestMse : ℚ := meanSquaredError testRows target prediction
 
 /-- MSE: mean_squared_error を使用する。
 - テストデータの目的変数と予測値を渡す。ほかの引数は渡さない -/
-abbrev C07 : Prop :=
+abbrev C08 : Prop :=
   mseFunction = "sklearn.metrics.mean_squared_error" ∧
   specifiedTestMse = meanSquaredError testRows target prediction
-theorem C07_holds : C07 := ⟨rfl, rfl⟩
+theorem C08_holds : C08 := ⟨rfl, rfl⟩
 
 /-! ### ライブラリの版 -/
 
@@ -142,8 +142,8 @@ def scipyVersion : String := "1.18.1"
 
 /-- ライブラリの版: scikit-learn 1.7.2，NumPy 2.3.4，SciPy 1.18.1 を使用する。
 - SciPy は，LinearRegression.fit が内部で呼ぶ -/
-abbrev C08 : Prop := scikitLearnVersion = "1.7.2" ∧ numpyVersion = "2.3.4" ∧ scipyVersion = "1.18.1"
-theorem C08_holds : C08 := ⟨rfl, rfl, rfl⟩
+abbrev C09 : Prop := scikitLearnVersion = "1.7.2" ∧ numpyVersion = "2.3.4" ∧ scipyVersion = "1.18.1"
+theorem C09_holds : C09 := ⟨rfl, rfl, rfl⟩
 
 /-! ### 計算環境 -/
 
@@ -152,8 +152,15 @@ def operatingSystem : String := "ubuntu-24.04"
 def cpuArchitecture : String := "x86_64"
 
 /-- 計算環境: Python 3.13.3，ubuntu-24.04，x86_64 を使用する。 -/
-abbrev C09 : Prop := pythonVersion = "3.13.3" ∧ operatingSystem = "ubuntu-24.04" ∧ cpuArchitecture = "x86_64"
-theorem C09_holds : C09 := ⟨rfl, rfl, rfl⟩
+abbrev C10 : Prop := pythonVersion = "3.13.3" ∧ operatingSystem = "ubuntu-24.04" ∧ cpuArchitecture = "x86_64"
+theorem C10_holds : C10 := ⟨rfl, rfl, rfl⟩
+
+/-! ## MSE を得る手順 -/
+
+/-- 宣言した手順で，MSE が値として定まる。
+- 宣言したデータセットを読み込み，分割し，当てはめ，予測し，MSE を計算すると，MSE が 1 つの有理数として定まる -/
+abbrev C02 : Prop := ∃ mse : ℚ, mse = specifiedTestMse
+theorem C02_holds : C02 := ⟨_, rfl⟩
 
 /-! ## 信頼性条件 -/
 
@@ -184,172 +191,174 @@ structure Used where
 /-! ### 宣言どおりに実行されたか -/
 
 /-- 出力された MSE は，宣言したとおりに計算した MSE である。 -/
-abbrev C13 (outputTestMse : ℚ) : Prop := (outputTestMse : ℝ) = specifiedTestMse
+abbrev C14 (outputTestMse : ℚ) : Prop := outputTestMse = specifiedTestMse
 
 /-! #### データセット -/
 
 /-- 実行が読んだファイルの SHA-256 は，宣言した SHA-256 と一致する。 -/
-abbrev C14 (observedDataSha256 : String) : Prop := observedDataSha256 = datasetSha256
+abbrev C15 (observedDataSha256 : String) : Prop := observedDataSha256 = datasetSha256
 /-- 宣言した URL から取得したファイルの SHA-256 は，宣言した SHA-256 と一致する。 -/
-abbrev C15 (fetchedSha256 : String) : Prop := fetchedSha256 = datasetSha256
+abbrev C16 (fetchedSha256 : String) : Prop := fetchedSha256 = datasetSha256
 /-- 実行が読んだファイルは，Efron らが用いた糖尿病データセットである。 -/
-abbrev C16 (observedDataSha256 : String) : Prop := observedDataSha256 = efronDatasetSha256
+abbrev C17 (observedDataSha256 : String) : Prop := observedDataSha256 = efronDatasetSha256
 /-- 実行が読んだデータの件数は，宣言した件数と一致する。 -/
-abbrev C17 (observedSampleCount : ℕ) : Prop := observedSampleCount = sampleCount
+abbrev C18 (observedSampleCount : ℕ) : Prop := observedSampleCount = sampleCount
 /-- 実行が読んだ説明変数の数は，宣言した数と一致する。 -/
-abbrev C18 (observedFeatureCount : ℕ) : Prop := observedFeatureCount = featureCount
+abbrev C19 (observedFeatureCount : ℕ) : Prop := observedFeatureCount = featureCount
 /-- 実行が説明変数として読んだ列は，宣言した列と一致する。 -/
-abbrev C19 (observedFeatureColumns : List String) : Prop := observedFeatureColumns = featureColumns
+abbrev C20 (observedFeatureColumns : List String) : Prop := observedFeatureColumns = featureColumns
 /-- 実行が目的変数として読んだ列は，宣言した列と一致する。 -/
-abbrev C20 (observedTargetColumn : String) : Prop := observedTargetColumn = targetColumn
+abbrev C21 (observedTargetColumn : String) : Prop := observedTargetColumn = targetColumn
 
 /-! #### 読み込み -/
 
 /-- 実行が読み込みに呼んだ関数は，宣言した関数と一致する。 -/
-abbrev C21 (observedLoadFunction : String) : Prop := observedLoadFunction = loadFunction
+abbrev C22 (observedLoadFunction : String) : Prop := observedLoadFunction = loadFunction
 /-- 実行が読み込みの関数に渡した引数は，宣言した引数と一致する。 -/
-abbrev C22 (observedLoadArguments : List (String × String)) : Prop := observedLoadArguments = loadArguments
+abbrev C23 (observedLoadArguments : List (String × String)) : Prop := observedLoadArguments = loadArguments
 
 /-! #### 分割 -/
 
 /-- 実行が分割に呼んだ関数は，宣言した関数と一致する。 -/
-abbrev C23 (observedSplitFunction : String) : Prop := observedSplitFunction = splitFunction
+abbrev C24 (observedSplitFunction : String) : Prop := observedSplitFunction = splitFunction
 /-- 実行が分割の関数に渡した引数は，宣言した引数と一致する。 -/
-abbrev C24 (observedSplitArguments : List (String × String)) : Prop := observedSplitArguments = splitArguments
+abbrev C25 (observedSplitArguments : List (String × String)) : Prop := observedSplitArguments = splitArguments
 /-- 実行が使った訓練データの行とテストデータの行は，重ならず，合わせると宣言した全件になる。 -/
-abbrev C25 (observedTrainIndex observedTestIndex : List ℕ) : Prop :=
+abbrev C26 (observedTrainIndex observedTestIndex : List ℕ) : Prop :=
   Disjoint observedTrainIndex.toFinset observedTestIndex.toFinset ∧
   observedTrainIndex.toFinset ∪ observedTestIndex.toFinset = Finset.range sampleCount
 
 /-! #### 当てはめ -/
 
 /-- 実行が当てはめに呼んだ関数は，宣言した関数と一致する。 -/
-abbrev C26 (observedFitFunction : String) : Prop := observedFitFunction = fitFunction
+abbrev C27 (observedFitFunction : String) : Prop := observedFitFunction = fitFunction
 /-- 実行が当てはめたときの LinearRegression のパラメータは，宣言したパラメータと一致する。 -/
-abbrev C27 (observedFitParameters : List (String × String)) : Prop := observedFitParameters = fitParameters
+abbrev C28 (observedFitParameters : List (String × String)) : Prop := observedFitParameters = fitParameters
 /-- 実行が当てはめに使った説明変数の数は，宣言した説明変数の数と一致する。 -/
-abbrev C28 (observedFitFeatureCount : ℕ) : Prop := observedFitFeatureCount = featureCount
+abbrev C29 (observedFitFeatureCount : ℕ) : Prop := observedFitFeatureCount = featureCount
 
 /-! #### 予測 -/
 
 /-- 実行が予測に呼んだ関数は，宣言した関数と一致する。 -/
-abbrev C29 (observedPredictFunction : String) : Prop := observedPredictFunction = predictFunction
+abbrev C30 (observedPredictFunction : String) : Prop := observedPredictFunction = predictFunction
 
 /-! #### MSE -/
 
 /-- 実行が MSE の計算に呼んだ関数は，宣言した関数と一致する。 -/
-abbrev C30 (observedMseFunction : String) : Prop := observedMseFunction = mseFunction
+abbrev C31 (observedMseFunction : String) : Prop := observedMseFunction = mseFunction
 
 /-! #### ライブラリの版 -/
 
 /-- 実行が使った scikit-learn の版は，宣言した版と一致する。 -/
-abbrev C31 (observedScikitLearnVersion : String) : Prop := observedScikitLearnVersion = scikitLearnVersion
+abbrev C32 (observedScikitLearnVersion : String) : Prop := observedScikitLearnVersion = scikitLearnVersion
 /-- 実行が使った NumPy の版は，宣言した版と一致する。 -/
-abbrev C32 (observedNumpyVersion : String) : Prop := observedNumpyVersion = numpyVersion
+abbrev C33 (observedNumpyVersion : String) : Prop := observedNumpyVersion = numpyVersion
 /-- 実行が使った SciPy の版は，宣言した版と一致する。 -/
-abbrev C33 (observedScipyVersion : String) : Prop := observedScipyVersion = scipyVersion
+abbrev C34 (observedScipyVersion : String) : Prop := observedScipyVersion = scipyVersion
 
 /-! #### 計算環境 -/
 
 /-- 実行が使った Python の版は，宣言した版と一致する。 -/
-abbrev C34 (observedPythonVersion : String) : Prop := observedPythonVersion = pythonVersion
+abbrev C35 (observedPythonVersion : String) : Prop := observedPythonVersion = pythonVersion
 /-- 実行が使った OS（GitHub Actions の runner の種類）は，宣言した OS と一致する。 -/
-abbrev C35 (observedOperatingSystem : String) : Prop := observedOperatingSystem = operatingSystem
+abbrev C36 (observedOperatingSystem : String) : Prop := observedOperatingSystem = operatingSystem
 /-- 実行が使った CPU のアーキテクチャは，宣言したアーキテクチャと一致する。 -/
-abbrev C36 (observedCpuArchitecture : String) : Prop := observedCpuArchitecture = cpuArchitecture
+abbrev C37 (observedCpuArchitecture : String) : Prop := observedCpuArchitecture = cpuArchitecture
 
 /-- 使ったものが，すべて宣言したものである。 -/
 def UsedAsDeclared (used : Used) : Prop :=
-  C16 used.dataSha256 ∧ C17 used.sampleCount ∧ C18 used.featureCount ∧ C19 used.featureColumns ∧
-  C20 used.targetColumn ∧ C21 used.loadFunction ∧ C22 used.loadArguments ∧
-  C23 used.splitFunction ∧ C24 used.splitArguments ∧
-  C26 used.fitFunction ∧ C27 used.fitParameters ∧ C28 used.fitFeatureCount ∧
-  C29 used.predictFunction ∧ C30 used.mseFunction ∧
-  C31 used.scikitLearnVersion ∧ C32 used.numpyVersion ∧ C33 used.scipyVersion ∧
-  C34 used.pythonVersion ∧ C35 used.operatingSystem ∧ C36 used.cpuArchitecture
+  C17 used.dataSha256 ∧ C18 used.sampleCount ∧ C19 used.featureCount ∧ C20 used.featureColumns ∧
+  C21 used.targetColumn ∧ C22 used.loadFunction ∧ C23 used.loadArguments ∧
+  C24 used.splitFunction ∧ C25 used.splitArguments ∧
+  C27 used.fitFunction ∧ C28 used.fitParameters ∧ C29 used.fitFeatureCount ∧
+  C30 used.predictFunction ∧ C31 used.mseFunction ∧
+  C32 used.scikitLearnVersion ∧ C33 used.numpyVersion ∧ C34 used.scipyVersion ∧
+  C35 used.pythonVersion ∧ C36 used.operatingSystem ∧ C37 used.cpuArchitecture
 
 /-! ### 公理 -/
 
 /-- 実行が実際に使ったもの（中身の無い記号）。 -/
 opaque actualUsed : Used
 /-- 実行が実際に計算した，テストデータに対する MSE（中身の無い記号）。 -/
-opaque actualTestMse : ℝ
-/-- 実験コードは，宣言（C03〜C07）のとおりに，データを関数へ渡す（中身の無い記号）。 -/
+opaque actualTestMse : ℚ
+/-- 実験コードは，宣言（C04〜C08）のとおりに，データを関数へ渡す（中身の無い記号）。 -/
 opaque CodePassesDataAsDeclared : Prop
 
 /-- Efron らが用いた糖尿病データセットは，配布元の URL から取得したファイルである。
 - 値が入った後に，その値に対して公理として宣言する -/
-abbrev C10 (fetchedSha256 : String) : Prop := efronDatasetSha256 = fetchedSha256
+abbrev C11 (fetchedSha256 : String) : Prop := efronDatasetSha256 = fetchedSha256
 
 /-- 実験コードは，仕様を満たす。
 - 使ったものを，そのまま出力に記録する
 - 計算した MSE を，そのまま出力に記録する
-- 宣言（C03〜C07）のとおりに，データを関数へ渡す
-- この実行に当てはめるには，訓練データの行とテストデータの行が，重ならず，合わせると全件になること（C25）が要る
+- 宣言（C04〜C08）のとおりに，データを関数へ渡す
+- この実行に当てはめるには，訓練データの行とテストデータの行が，重ならず，合わせると全件になること（C26）が要る
 - 値が入った後に，その値に対して公理として宣言する（任意の値に対して宣言すると，すべての値が等しいことになってしまう） -/
-abbrev C11 (observedTrainIndex observedTestIndex : List ℕ) (observed : Used) (outputTestMse : ℚ) : Prop :=
-  C25 observedTrainIndex observedTestIndex →
-  observed = actualUsed ∧ (outputTestMse : ℝ) = actualTestMse ∧ CodePassesDataAsDeclared
+abbrev C12 (observedTrainIndex observedTestIndex : List ℕ) (observed : Used) (outputTestMse : ℚ) : Prop :=
+  C26 observedTrainIndex observedTestIndex →
+  observed = actualUsed ∧ outputTestMse = actualTestMse ∧ CodePassesDataAsDeclared
 
 /-- ライブラリは信用できる。
 - 宣言したデータセット，関数，引数，版，計算環境を使い，宣言のとおりにデータを渡せば，ライブラリが計算する MSE は，宣言したとおりに計算した MSE である
 - 関数の中身（何を計算するか）は主張しない -/
-abbrev C12 : Prop := UsedAsDeclared actualUsed → CodePassesDataAsDeclared → actualTestMse = specifiedTestMse
-axiom C12_axiom : C12
+abbrev C13 : Prop := UsedAsDeclared actualUsed → CodePassesDataAsDeclared → actualTestMse = specifiedTestMse
+axiom C13_axiom : C13
 
-/-- C10（公理），C14，C15 から C16 を導く。 -/
-theorem C16_of_C10_C14_C15 (observedDataSha256 fetchedSha256 : String) :
-    C10 fetchedSha256 → C14 observedDataSha256 → C15 fetchedSha256 → C16 observedDataSha256 :=
-  fun c10 c14 c15 => c14.trans (c15.symm.trans c10.symm)
+/-- C11（公理），C15，C16 から C17 を導く。 -/
+theorem C17_of_C11_C15_C16 (observedDataSha256 fetchedSha256 : String) :
+    C11 fetchedSha256 → C15 observedDataSha256 → C16 fetchedSha256 → C17 observedDataSha256 :=
+  fun c11 c15 c16 => c15.trans (c16.symm.trans c11.symm)
 
-/-- 公理（C11，C12）と C16〜C36 から C13 を導く。 -/
-theorem C13_of_C11_C12_C16_to_C36 (observedTrainIndex observedTestIndex : List ℕ) (observed : Used)
+/-- 公理（C12，C13）と C17〜C37 から C14 を導く。 -/
+theorem C14_of_C12_C13_C17_to_C37 (observedTrainIndex observedTestIndex : List ℕ) (observed : Used)
     (outputTestMse : ℚ) :
-    C11 observedTrainIndex observedTestIndex observed outputTestMse → C12 →
-    C16 observed.dataSha256 → C17 observed.sampleCount → C18 observed.featureCount →
-    C19 observed.featureColumns → C20 observed.targetColumn →
-    C21 observed.loadFunction → C22 observed.loadArguments →
-    C23 observed.splitFunction → C24 observed.splitArguments → C25 observedTrainIndex observedTestIndex →
-    C26 observed.fitFunction → C27 observed.fitParameters → C28 observed.fitFeatureCount →
-    C29 observed.predictFunction → C30 observed.mseFunction →
-    C31 observed.scikitLearnVersion → C32 observed.numpyVersion → C33 observed.scipyVersion →
-    C34 observed.pythonVersion → C35 observed.operatingSystem → C36 observed.cpuArchitecture →
-    C13 outputTestMse := by
-  intro c11 c12 c16 c17 c18 c19 c20 c21 c22 c23 c24 c25 c26 c27 c28 c29 c30 c31 c32 c33 c34 c35 c36
-  obtain ⟨recorded, output, passes⟩ := c11 c25
+    C12 observedTrainIndex observedTestIndex observed outputTestMse → C13 →
+    C17 observed.dataSha256 → C18 observed.sampleCount → C19 observed.featureCount →
+    C20 observed.featureColumns → C21 observed.targetColumn →
+    C22 observed.loadFunction → C23 observed.loadArguments →
+    C24 observed.splitFunction → C25 observed.splitArguments → C26 observedTrainIndex observedTestIndex →
+    C27 observed.fitFunction → C28 observed.fitParameters → C29 observed.fitFeatureCount →
+    C30 observed.predictFunction → C31 observed.mseFunction →
+    C32 observed.scikitLearnVersion → C33 observed.numpyVersion → C34 observed.scipyVersion →
+    C35 observed.pythonVersion → C36 observed.operatingSystem → C37 observed.cpuArchitecture →
+    C14 outputTestMse := by
+  intro c12 c13 c17 c18 c19 c20 c21 c22 c23 c24 c25 c26 c27 c28 c29 c30 c31 c32 c33 c34 c35 c36 c37
+  obtain ⟨recorded, output, passes⟩ := c12 c26
   have used : UsedAsDeclared actualUsed := by
     rw [← recorded]
-    exact ⟨c16, c17, c18, c19, c20, c21, c22, c23, c24, c26, c27, c28, c29, c30, c31, c32, c33,
-      c34, c35, c36⟩
-  exact output.trans (c12 used passes)
+    exact ⟨c17, c18, c19, c20, c21, c22, c23, c24, c25, c27, c28, c29, c30, c31, c32, c33, c34,
+      c35, c36, c37⟩
+  exact output.trans (c13 used passes)
 
 /-! ### HARKing をしていない -/
 
 /-- 本番の run は，失敗したものも含めてすべて，判定に使う宣言と同じ宣言の commit で実行された。
 - 宣言は，このファイル（Spec.lean）と，値の取り方（verification.json）
 - 最初の本番の run より前に宣言があり，その後に宣言を書き換えていないことを示す -/
-abbrev C37 (fullRunDeclarationSha256s : List String) (verifiedDeclarationSha256 : String) : Prop :=
+abbrev C38 (fullRunDeclarationSha256s : List String) (verifiedDeclarationSha256 : String) : Prop :=
   ∀ sha256 ∈ fullRunDeclarationSha256s, sha256 = verifiedDeclarationSha256
 
 /-! ### チェリーピッキングをしていない -/
 
 /-- 成功した本番の run が出力した MSE は，すべて，判定に使う MSE と一致する。 -/
-abbrev C38 (fullRunTestMses : List ℚ) (outputTestMse : ℚ) : Prop := ∀ mse ∈ fullRunTestMses, mse = outputTestMse
+abbrev C39 (fullRunTestMses : List ℚ) (outputTestMse : ℚ) : Prop := ∀ mse ∈ fullRunTestMses, mse = outputTestMse
 
-/-! ## 出力された MSE の信頼性 -/
+/-! ## C01 の判定の信頼性 -/
 
-/-- 出力された MSE は，信頼性条件を満たす。
-- 宣言どおりに実行された（C13），HARKing をしていない（C37），チェリーピッキングをしていない（C38） -/
+/-- C01 の判定は，信頼性条件を満たす。
+- 出力された MSE での判定（C01）は，宣言したとおりに計算した MSE が 3400 を下回るかの判定と一致する（C14 から導く）
+- HARKing をしていない（C38），チェリーピッキングをしていない（C39） -/
 abbrev C00 (outputTestMse : ℚ) (fullRunDeclarationSha256s : List String) (verifiedDeclarationSha256 : String)
     (fullRunTestMses : List ℚ) : Prop :=
-  C13 outputTestMse ∧ C37 fullRunDeclarationSha256s verifiedDeclarationSha256 ∧ C38 fullRunTestMses outputTestMse
+  (C01 outputTestMse ↔ specifiedTestMse < 3400) ∧
+  C38 fullRunDeclarationSha256s verifiedDeclarationSha256 ∧ C39 fullRunTestMses outputTestMse
 
-/-- C13，C37，C38 から C00 を導く。 -/
-theorem C00_of_C13_C37_C38 (outputTestMse : ℚ) (fullRunDeclarationSha256s : List String)
+/-- C14，C38，C39 から C00 を導く。 -/
+theorem C00_of_C14_C38_C39 (outputTestMse : ℚ) (fullRunDeclarationSha256s : List String)
     (verifiedDeclarationSha256 : String) (fullRunTestMses : List ℚ) :
-    C13 outputTestMse → C37 fullRunDeclarationSha256s verifiedDeclarationSha256 →
-    C38 fullRunTestMses outputTestMse →
+    C14 outputTestMse → C38 fullRunDeclarationSha256s verifiedDeclarationSha256 →
+    C39 fullRunTestMses outputTestMse →
     C00 outputTestMse fullRunDeclarationSha256s verifiedDeclarationSha256 fullRunTestMses :=
-  fun c13 c37 c38 => ⟨c13, c37, c38⟩
+  fun c14 c38 c39 => ⟨by rw [← c14], c38, c39⟩
 
 end Spec
