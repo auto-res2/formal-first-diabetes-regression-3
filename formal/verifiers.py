@@ -80,6 +80,11 @@ def artifact_json(repository: str, mode: str, variable: str, path: str, key: str
     return json.loads(_artifact(repository, _evidence_run(repository, mode)["id"]).read(path), parse_float=Fraction)[key]
 
 
+def artifact_json_keys(repository: str, mode: str, variable: str, path: str) -> list[str]:
+    """artifact にある JSON の、キーの一覧。"""
+    return list(json.loads(_artifact(repository, _evidence_run(repository, mode)["id"]).read(path)))
+
+
 def artifact_rows_sha256(repository: str, mode: str, variable: str, path: str, index: str, columns: list[str]) -> str:
     """artifact にあるデータのファイルから、実験の出力が記録した番号の行を取り出したものの SHA-256。実験コードと同じ表記（JSON）でまとめる。"""
     run = _evidence_run(repository, mode)["id"]
@@ -126,5 +131,5 @@ def local_json_sha256(repository: str, mode: str, variable: str, path: str, drop
 
 
 QUERIES = {"GitHub": {f.__name__: f for f in (
-    experiment_output, succeeded_runs_experiment_output, artifact_file_sha256, artifact_json, artifact_rows_sha256, runner_label,
+    experiment_output, succeeded_runs_experiment_output, artifact_file_sha256, artifact_json, artifact_json_keys, artifact_rows_sha256, runner_label,
     all_runs_json_sha256, local_json_sha256)}}

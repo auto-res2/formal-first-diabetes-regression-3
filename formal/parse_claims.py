@@ -63,6 +63,19 @@ def load_schema() -> dict:
             raise ValueError(f"{claim['id']}: 値の取り方が claims.json に無い: {unknown}")
     for variable in record["variables"].values():
         variable.pop("verified", None)
+    # 抜けを止める: 宣言の claim は C02 と R05 の行で、宣言した値は R05 の下のどれかの claim で、使われていなければならない
+    claims = {claim["id"]: claim for claim in record["claims"]}
+    declarations = [claim for claim in record["claims"] if claim["group"].startswith("宣言 / ")]
+    rows = claims["R05"]["definitions"]
+    unused = [c["id"] for c in declarations if not re.search(rf"\b{c['id']}\b", claims["C02"]["proposition"]) or not re.search(rf"\b{c['id']}\b", rows)]
+    if unused:
+        raise ValueError(f"宣言が、C02 か、R05 の行で使われていない: {unused}")
+    values = [name for c in declarations
+              for name in re.findall(r"^(?:def|abbrev) (\w+) : (?:String|ℕ|List String|List \(String × String\)) :=", c["definitions"], re.M)]
+    compared = " ".join(claims[i]["proposition"].split(":=", 1)[1] for i in claims["R05"]["derived"]["from"])
+    unchecked = [name for name in values if not re.search(rf"\b{name}\b", compared)]
+    if unchecked:
+        raise ValueError(f"宣言した値が、R05 の下のどの claim でも観測と比べられていない: {unchecked}")
     return record
 
 
@@ -132,11 +145,13 @@ def candidates(record: dict, available: set[str]) -> list[str]:
             if refutation := claim["derived"].get("refutation"):
                 derived[name] += [f"theorem {name}_fails : ¬ ({statement}) := {refutation} {holes} " + " ".join(_proof(claims[i]) for i in premises) + compared,
                                   f"#print axioms {name}_fails"]
-            # 連言の claim は、偽の成分が 1 つあれば偽。成分の並びは、前提の並びと同じ
-            if re.search(r"\b[CR]\d\d\b.*∧", claim["proposition"].split(":=", 1)[1], re.S):
-                parts = [".1" if i == 0 else ".2" * i + (".1" if i < len(premises) - 1 else "") for i in range(len(premises))]
+            # 前提が 1 つ偽なら偽。h から各前提を取り出す式は、連言なら並びから決まる。そうでなければ paths に書く
+            paths = claim["derived"].get("paths")
+            if paths or re.search(r"\b[CR]\d\d\b.*∧", claim["proposition"].split(":=", 1)[1], re.S):
+                parts = [paths[i] if paths else "h" + (".1" if n == 0 else ".2" * n + (".1" if n < len(premises) - 1 else ""))
+                         for n, i in enumerate(premises)]
                 derived[name] += [f"theorem {name}_fails : ¬ ({statement}) := fun h => by first "
-                                  + " ".join(f"| exact (proved% {premise}_fails) h{part}" for premise, part in zip(premises, parts)),
+                                  + " ".join(f"| exact (proved% {premise}_fails) {part}" for premise, part in zip(premises, parts)),
                                   f"#print axioms {name}_fails"]
         else:
             lines += [f"theorem {name}_holds : {statement} := by decide +kernel",

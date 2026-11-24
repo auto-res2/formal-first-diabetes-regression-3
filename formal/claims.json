@@ -36,17 +36,18 @@
     "R28",
     "R29",
     "R30",
+    "R31",
     "R05",
     "R02",
     "R03",
     "R04",
-    "R31",
     "R32",
+    "R33",
     "R01",
     "C00"
   ],
   "derived_order": [
-    "R09",
+    "R10",
     "R05",
     "C01",
     "R01",
@@ -58,7 +59,7 @@
       "group": "C01 と信頼性条件",
       "explanation": "出力された MSE は 3400 を下回り（C01），信頼性条件を満たす（R01）。",
       "definitions": "",
-      "proposition": "abbrev C00 (observedRepositoryCommit fetchedSha256 : String) (observedTrainIndex observedTestIndex : List ℕ)\n    (observedFitInputSha256 loadedTrainRowsSha256 observedPredictInputSha256 loadedTestFeaturesSha256 : String)\n    (observedMseTargetSha256 loadedTestTargetSha256 : String) (observed : Used) (outputTestMse : ℚ)\n    (fullRunDeclarationSha256s : List String) (verifiedDeclarationSha256 : String) (fullRunTestMses : List ℚ) : Prop :=\n  C01 outputTestMse ∧\n  R01 observedRepositoryCommit fetchedSha256 observedTrainIndex observedTestIndex observedFitInputSha256 loadedTrainRowsSha256\n      observedPredictInputSha256 loadedTestFeaturesSha256 observedMseTargetSha256 loadedTestTargetSha256 observed outputTestMse\n      fullRunDeclarationSha256s verifiedDeclarationSha256 fullRunTestMses",
+      "proposition": "abbrev C00 (observedRepositoryCommit fetchedSha256 : String) (observedFetchedUrls : List String) (observedTrainIndex observedTestIndex : List ℕ)\n    (observedFitInputSha256 loadedTrainRowsSha256 observedPredictInputSha256 loadedTestFeaturesSha256 : String)\n    (observedMseTargetSha256 loadedTestTargetSha256 : String) (observed : Used) (outputTestMse : ℚ)\n    (fullRunDeclarationSha256s : List String) (verifiedDeclarationSha256 : String) (fullRunTestMses : List ℚ) : Prop :=\n  C01 outputTestMse ∧\n  R01 observedRepositoryCommit fetchedSha256 observedFetchedUrls observedTrainIndex observedTestIndex observedFitInputSha256 loadedTrainRowsSha256\n      observedPredictInputSha256 loadedTestFeaturesSha256 observedMseTargetSha256 loadedTestTargetSha256 observed outputTestMse\n      fullRunDeclarationSha256s verifiedDeclarationSha256 fullRunTestMses",
       "main": false,
       "kind": "derived",
       "verifier": "Lean",
@@ -181,21 +182,21 @@
     {
       "id": "R01",
       "group": "信頼性条件",
-      "explanation": "信頼性条件を満たす。\n- 公理（R02，R03，R04）\n- 宣言どおりに実行された（R05）\n- HARKing をしていない（R31）\n- チェリーピッキングをしていない（R32）",
+      "explanation": "信頼性条件を満たす。\n- 公理（R02，R03，R04）\n- 宣言どおりに実行された（R05）\n- HARKing をしていない（R32）\n- チェリーピッキングをしていない（R33）",
       "definitions": "",
-      "proposition": "abbrev R01 (observedRepositoryCommit fetchedSha256 : String) (observedTrainIndex observedTestIndex : List ℕ)\n    (observedFitInputSha256 loadedTrainRowsSha256 observedPredictInputSha256 loadedTestFeaturesSha256 : String)\n    (observedMseTargetSha256 loadedTestTargetSha256 : String) (observed : Used) (outputTestMse : ℚ)\n    (fullRunDeclarationSha256s : List String) (verifiedDeclarationSha256 : String) (fullRunTestMses : List ℚ) : Prop :=\n  R02 fetchedSha256 ∧ R03 observed outputTestMse ∧ R04 ∧\n  R05 observedRepositoryCommit fetchedSha256 observedTrainIndex observedTestIndex observedFitInputSha256 loadedTrainRowsSha256\n      observedPredictInputSha256 loadedTestFeaturesSha256 observedMseTargetSha256 loadedTestTargetSha256 observed ∧\n  R31 fullRunDeclarationSha256s verifiedDeclarationSha256 ∧ R32 fullRunTestMses outputTestMse",
+      "proposition": "abbrev R01 (observedRepositoryCommit fetchedSha256 : String) (observedFetchedUrls : List String) (observedTrainIndex observedTestIndex : List ℕ)\n    (observedFitInputSha256 loadedTrainRowsSha256 observedPredictInputSha256 loadedTestFeaturesSha256 : String)\n    (observedMseTargetSha256 loadedTestTargetSha256 : String) (observed : Used) (outputTestMse : ℚ)\n    (fullRunDeclarationSha256s : List String) (verifiedDeclarationSha256 : String) (fullRunTestMses : List ℚ) : Prop :=\n  R02 fetchedSha256 ∧ R03 observed outputTestMse ∧ R04 ∧\n  R05 observedRepositoryCommit fetchedSha256 observedFetchedUrls observedTrainIndex observedTestIndex observedFitInputSha256 loadedTrainRowsSha256\n      observedPredictInputSha256 loadedTestFeaturesSha256 observedMseTargetSha256 loadedTestTargetSha256 observed ∧\n  R32 fullRunDeclarationSha256s verifiedDeclarationSha256 ∧ R33 fullRunTestMses outputTestMse",
       "main": false,
       "kind": "derived",
       "verifier": "Lean",
       "derived": {
-        "theorem": "R01_of_R02_R03_R04_R05_R31_R32",
+        "theorem": "R01_of_R02_R03_R04_R05_R32_R33",
         "from": [
           "R02",
           "R03",
           "R04",
           "R05",
-          "R31",
-          "R32"
+          "R32",
+          "R33"
         ]
       }
     },
@@ -203,7 +204,7 @@
       "id": "R02",
       "group": "信頼性条件 / 公理",
       "explanation": "Efron らが用いた糖尿病データセットは，配布元の URL から取得したファイルである。\n- 値が入った後に，その値に対して公理として宣言する",
-      "definitions": "/-- 使ったものが，すべて宣言したものである。 -/\ndef UsedAsDeclared (used : Used) : Prop :=\n  R09 used.dataSha256 ∧ R10 used.sampleCount ∧ R11 used.featureCount ∧\n  R12 used.featureColumns ∧ R13 used.targetColumn ∧ R14 used.loadFunction ∧\n  R15 used.loadArguments ∧ R16 used.splitFunction ∧ R17 used.splitArguments ∧\n  R19 used.fitFunction ∧ R20 used.fitParameters ∧ R21 used.fitFeatureCount ∧\n  R23 used.predictFunction ∧ R25 used.mseFunction ∧ R27 used.operatingSystem ∧\n  R28 used.cpuArchitecture ∧ R29 used.cpuCount ∧ R30 used.memoryGibibytes\n/-- 実行が実際に使ったもの（中身の無い記号）。 -/\nopaque actualUsed : Used\n/-- 実行が実際に計算した，テストデータに対する MSE（中身の無い記号）。 -/\nopaque actualTestMse : ℚ\n/-- 実験コードは，宣言（C04〜C08）のとおりに，データを関数へ渡す（中身の無い記号）。 -/\nopaque CodePassesDataAsDeclared : Prop",
+      "definitions": "/-- 使ったものが，すべて宣言したものである。 -/\ndef UsedAsDeclared (used : Used) : Prop :=\n  R10 used.dataSha256 ∧ R11 used.sampleCount ∧ R12 used.featureCount ∧\n  R13 used.featureColumns ∧ R14 used.targetColumn ∧ R15 used.loadFunction ∧\n  R16 used.loadArguments ∧ R17 used.splitFunction ∧ R18 used.splitArguments ∧\n  R20 used.fitFunction ∧ R21 used.fitParameters ∧ R22 used.fitFeatureCount ∧\n  R24 used.predictFunction ∧ R26 used.mseFunction ∧ R28 used.operatingSystem ∧\n  R29 used.cpuArchitecture ∧ R30 used.cpuCount ∧ R31 used.memoryGibibytes\n/-- 実行が実際に使ったもの（中身の無い記号）。 -/\nopaque actualUsed : Used\n/-- 実行が実際に計算した，テストデータに対する MSE（中身の無い記号）。 -/\nopaque actualTestMse : ℚ\n/-- 実験コードは，宣言（C04〜C08）のとおりに，データを関数へ渡す（中身の無い記号）。 -/\nopaque CodePassesDataAsDeclared : Prop",
       "proposition": "abbrev R02 (fetchedSha256 : String) : Prop := efronDatasetSha256 = fetchedSha256",
       "main": false,
       "kind": "axiom",
@@ -235,14 +236,14 @@
     {
       "id": "R05",
       "group": "信頼性条件 / 宣言どおりに実行されたか",
-      "explanation": "宣言どおりに実行された。\n- 宣言と観測が，すべて一致する（R06〜R30）",
-      "definitions": "",
-      "proposition": "abbrev R05 (observedRepositoryCommit fetchedSha256 : String) (observedTrainIndex observedTestIndex : List ℕ)\n    (observedFitInputSha256 loadedTrainRowsSha256 observedPredictInputSha256 loadedTestFeaturesSha256 : String)\n    (observedMseTargetSha256 loadedTestTargetSha256 : String) (observed : Used) : Prop :=\n  R06 observedRepositoryCommit ∧ R07 observed.dataSha256 ∧ R08 fetchedSha256 ∧\n  R09 observed.dataSha256 ∧ R10 observed.sampleCount ∧ R11 observed.featureCount ∧\n  R12 observed.featureColumns ∧ R13 observed.targetColumn ∧ R14 observed.loadFunction ∧\n  R15 observed.loadArguments ∧ R16 observed.splitFunction ∧ R17 observed.splitArguments ∧\n  R18 observedTrainIndex observedTestIndex ∧ R19 observed.fitFunction ∧ R20 observed.fitParameters ∧\n  R21 observed.fitFeatureCount ∧ R22 observedFitInputSha256 loadedTrainRowsSha256 ∧ R23 observed.predictFunction ∧\n  R24 observedPredictInputSha256 loadedTestFeaturesSha256 ∧ R25 observed.mseFunction ∧ R26 observedMseTargetSha256 loadedTestTargetSha256 ∧\n  R27 observed.operatingSystem ∧ R28 observed.cpuArchitecture ∧ R29 observed.cpuCount ∧\n  R30 observed.memoryGibibytes",
+      "explanation": "宣言どおりに実行された。\n- すべての宣言（C03〜C10）について，GitHub の検証器が観測した値は，宣言と一致する（R06〜R31）",
+      "definitions": "/-- 宣言の一覧。 -/\ninductive Declaration\n  | dataset | load | split | fit | predict | mse | environment | repositoryCommit\n/-- 宣言ごとの，宣言の命題と，GitHub の検証器が観測した値との一致。 -/\nabbrev ObservedAsDeclared (observedRepositoryCommit fetchedSha256 : String) (observedFetchedUrls : List String)\n    (observedTrainIndex observedTestIndex : List ℕ)\n    (observedFitInputSha256 loadedTrainRowsSha256 observedPredictInputSha256 loadedTestFeaturesSha256 : String)\n    (observedMseTargetSha256 loadedTestTargetSha256 : String) (observed : Used) : Declaration → Prop\n  | .dataset =>\n      C03 ∧ R07 observed.dataSha256 ∧ R08 observedFetchedUrls ∧\n      R09 fetchedSha256 ∧ R10 observed.dataSha256 ∧ R11 observed.sampleCount ∧\n      R12 observed.featureCount ∧ R13 observed.featureColumns ∧ R14 observed.targetColumn\n  | .load =>\n      C04 ∧ R15 observed.loadFunction ∧ R16 observed.loadArguments\n  | .split =>\n      C05 ∧ R17 observed.splitFunction ∧ R18 observed.splitArguments ∧\n      R19 observedTrainIndex observedTestIndex\n  | .fit =>\n      C06 ∧ R20 observed.fitFunction ∧ R21 observed.fitParameters ∧\n      R22 observed.fitFeatureCount ∧ R23 observedFitInputSha256 loadedTrainRowsSha256\n  | .predict =>\n      C07 ∧ R24 observed.predictFunction ∧ R25 observedPredictInputSha256 loadedTestFeaturesSha256\n  | .mse =>\n      C08 ∧ R26 observed.mseFunction ∧ R27 observedMseTargetSha256 loadedTestTargetSha256\n  | .environment =>\n      C09 ∧ R28 observed.operatingSystem ∧ R29 observed.cpuArchitecture ∧\n      R30 observed.cpuCount ∧ R31 observed.memoryGibibytes\n  | .repositoryCommit =>\n      C10 ∧ R06 observedRepositoryCommit",
+      "proposition": "abbrev R05 (observedRepositoryCommit fetchedSha256 : String) (observedFetchedUrls : List String)\n    (observedTrainIndex observedTestIndex : List ℕ)\n    (observedFitInputSha256 loadedTrainRowsSha256 observedPredictInputSha256 loadedTestFeaturesSha256 : String)\n    (observedMseTargetSha256 loadedTestTargetSha256 : String) (observed : Used) : Prop :=\n  ∀ declaration : Declaration,\n    ObservedAsDeclared observedRepositoryCommit fetchedSha256 observedFetchedUrls observedTrainIndex observedTestIndex\n      observedFitInputSha256 loadedTrainRowsSha256 observedPredictInputSha256 loadedTestFeaturesSha256\n      observedMseTargetSha256 loadedTestTargetSha256 observed declaration",
       "main": false,
       "kind": "derived",
       "verifier": "Lean",
       "derived": {
-        "theorem": "R05_of_R06_to_R30",
+        "theorem": "R05_of_R06_to_R31",
         "from": [
           "R06",
           "R07",
@@ -268,8 +269,37 @@
           "R27",
           "R28",
           "R29",
-          "R30"
-        ]
+          "R30",
+          "R31"
+        ],
+        "paths": {
+          "R07": "(h .dataset).2.1",
+          "R08": "(h .dataset).2.2.1",
+          "R09": "(h .dataset).2.2.2.1",
+          "R10": "(h .dataset).2.2.2.2.1",
+          "R11": "(h .dataset).2.2.2.2.2.1",
+          "R12": "(h .dataset).2.2.2.2.2.2.1",
+          "R13": "(h .dataset).2.2.2.2.2.2.2.1",
+          "R14": "(h .dataset).2.2.2.2.2.2.2.2",
+          "R15": "(h .load).2.1",
+          "R16": "(h .load).2.2",
+          "R17": "(h .split).2.1",
+          "R18": "(h .split).2.2.1",
+          "R19": "(h .split).2.2.2",
+          "R20": "(h .fit).2.1",
+          "R21": "(h .fit).2.2.1",
+          "R22": "(h .fit).2.2.2.1",
+          "R23": "(h .fit).2.2.2.2",
+          "R24": "(h .predict).2.1",
+          "R25": "(h .predict).2.2",
+          "R26": "(h .mse).2.1",
+          "R27": "(h .mse).2.2",
+          "R28": "(h .environment).2.1",
+          "R29": "(h .environment).2.2.1",
+          "R30": "(h .environment).2.2.2.1",
+          "R31": "(h .environment).2.2.2.2",
+          "R06": "(h .repositoryCommit).2"
+        }
       }
     },
     {
@@ -295,9 +325,9 @@
     {
       "id": "R08",
       "group": "信頼性条件 / 宣言どおりに実行されたか / データセット",
-      "explanation": "宣言した URL から取得したファイルの SHA-256 は，宣言した SHA-256 と一致する。",
+      "explanation": "取得の記録にある URL は，宣言した URL だけである。",
       "definitions": "",
-      "proposition": "abbrev R08 (fetchedSha256 : String) : Prop := fetchedSha256 = datasetSha256",
+      "proposition": "abbrev R08 (observedFetchedUrls : List String) : Prop := observedFetchedUrls = [datasetUrl]",
       "main": false,
       "kind": "",
       "verifier": "GitHub"
@@ -305,37 +335,37 @@
     {
       "id": "R09",
       "group": "信頼性条件 / 宣言どおりに実行されたか / データセット",
-      "explanation": "実行が読んだファイルは，Efron らが用いた糖尿病データセットである。",
+      "explanation": "宣言した URL から取得したファイルの SHA-256 は，宣言した SHA-256 と一致する。",
       "definitions": "",
-      "proposition": "abbrev R09 (observedDataSha256 : String) : Prop := observedDataSha256 = efronDatasetSha256",
-      "main": false,
-      "kind": "derived",
-      "verifier": "Lean",
-      "derived": {
-        "theorem": "R09_of_R02_R07_R08",
-        "from": [
-          "R02",
-          "R07",
-          "R08"
-        ]
-      }
-    },
-    {
-      "id": "R10",
-      "group": "信頼性条件 / 宣言どおりに実行されたか / データセット",
-      "explanation": "実行が読んだデータの件数は，宣言した件数と一致する。",
-      "definitions": "",
-      "proposition": "abbrev R10 (observedSampleCount : ℕ) : Prop := observedSampleCount = sampleCount",
+      "proposition": "abbrev R09 (fetchedSha256 : String) : Prop := fetchedSha256 = datasetSha256",
       "main": false,
       "kind": "",
       "verifier": "GitHub"
     },
     {
+      "id": "R10",
+      "group": "信頼性条件 / 宣言どおりに実行されたか / データセット",
+      "explanation": "実行が読んだファイルは，Efron らが用いた糖尿病データセットである。",
+      "definitions": "",
+      "proposition": "abbrev R10 (observedDataSha256 : String) : Prop := observedDataSha256 = efronDatasetSha256",
+      "main": false,
+      "kind": "derived",
+      "verifier": "Lean",
+      "derived": {
+        "theorem": "R10_of_R02_R07_R09",
+        "from": [
+          "R02",
+          "R07",
+          "R09"
+        ]
+      }
+    },
+    {
       "id": "R11",
       "group": "信頼性条件 / 宣言どおりに実行されたか / データセット",
-      "explanation": "実行が読んだ説明変数の数は，宣言した数と一致する。",
+      "explanation": "実行が読んだデータの件数は，宣言した件数と一致する。",
       "definitions": "",
-      "proposition": "abbrev R11 (observedFeatureCount : ℕ) : Prop := observedFeatureCount = featureCount",
+      "proposition": "abbrev R11 (observedSampleCount : ℕ) : Prop := observedSampleCount = sampleCount",
       "main": false,
       "kind": "",
       "verifier": "GitHub"
@@ -343,9 +373,9 @@
     {
       "id": "R12",
       "group": "信頼性条件 / 宣言どおりに実行されたか / データセット",
-      "explanation": "実行が説明変数として読んだ列は，宣言した列と一致する。",
+      "explanation": "実行が読んだ説明変数の数は，宣言した数と一致する。",
       "definitions": "",
-      "proposition": "abbrev R12 (observedFeatureColumns : List String) : Prop := observedFeatureColumns = featureColumns",
+      "proposition": "abbrev R12 (observedFeatureCount : ℕ) : Prop := observedFeatureCount = featureCount",
       "main": false,
       "kind": "",
       "verifier": "GitHub"
@@ -353,19 +383,19 @@
     {
       "id": "R13",
       "group": "信頼性条件 / 宣言どおりに実行されたか / データセット",
-      "explanation": "実行が目的変数として読んだ列は，宣言した列と一致する。",
+      "explanation": "実行が説明変数として読んだ列は，宣言した列と一致する。",
       "definitions": "",
-      "proposition": "abbrev R13 (observedTargetColumn : String) : Prop := observedTargetColumn = targetColumn",
+      "proposition": "abbrev R13 (observedFeatureColumns : List String) : Prop := observedFeatureColumns = featureColumns",
       "main": false,
       "kind": "",
       "verifier": "GitHub"
     },
     {
       "id": "R14",
-      "group": "信頼性条件 / 宣言どおりに実行されたか / 読み込み",
-      "explanation": "実行が読み込みに呼んだ関数は，宣言した関数と一致する。",
+      "group": "信頼性条件 / 宣言どおりに実行されたか / データセット",
+      "explanation": "実行が目的変数として読んだ列は，宣言した列と一致する。",
       "definitions": "",
-      "proposition": "abbrev R14 (observedLoadFunction : String) : Prop := observedLoadFunction = loadFunction",
+      "proposition": "abbrev R14 (observedTargetColumn : String) : Prop := observedTargetColumn = targetColumn",
       "main": false,
       "kind": "",
       "verifier": "GitHub"
@@ -373,19 +403,19 @@
     {
       "id": "R15",
       "group": "信頼性条件 / 宣言どおりに実行されたか / 読み込み",
-      "explanation": "実行が読み込みの関数に渡した引数は，宣言した引数と一致する。",
+      "explanation": "実行が読み込みに呼んだ関数は，宣言した関数と一致する。",
       "definitions": "",
-      "proposition": "abbrev R15 (observedLoadArguments : List (String × String)) : Prop := observedLoadArguments = loadArguments",
+      "proposition": "abbrev R15 (observedLoadFunction : String) : Prop := observedLoadFunction = loadFunction",
       "main": false,
       "kind": "",
       "verifier": "GitHub"
     },
     {
       "id": "R16",
-      "group": "信頼性条件 / 宣言どおりに実行されたか / 分割",
-      "explanation": "実行が分割に呼んだ関数は，宣言した関数と一致する。",
+      "group": "信頼性条件 / 宣言どおりに実行されたか / 読み込み",
+      "explanation": "実行が読み込みの関数に渡した引数は，宣言した引数と一致する。",
       "definitions": "",
-      "proposition": "abbrev R16 (observedSplitFunction : String) : Prop := observedSplitFunction = splitFunction",
+      "proposition": "abbrev R16 (observedLoadArguments : List (String × String)) : Prop := observedLoadArguments = loadArguments",
       "main": false,
       "kind": "",
       "verifier": "GitHub"
@@ -393,9 +423,9 @@
     {
       "id": "R17",
       "group": "信頼性条件 / 宣言どおりに実行されたか / 分割",
-      "explanation": "実行が分割の関数に渡した引数は，宣言した引数と一致する。",
+      "explanation": "実行が分割に呼んだ関数は，宣言した関数と一致する。",
       "definitions": "",
-      "proposition": "abbrev R17 (observedSplitArguments : List (String × String)) : Prop := observedSplitArguments = splitArguments",
+      "proposition": "abbrev R17 (observedSplitFunction : String) : Prop := observedSplitFunction = splitFunction",
       "main": false,
       "kind": "",
       "verifier": "GitHub"
@@ -403,19 +433,19 @@
     {
       "id": "R18",
       "group": "信頼性条件 / 宣言どおりに実行されたか / 分割",
-      "explanation": "実行が使った訓練データの行とテストデータの行は，重ならず，合わせると宣言した全件になる。",
+      "explanation": "実行が分割の関数に渡した引数は，宣言した引数と一致する。",
       "definitions": "",
-      "proposition": "abbrev R18 (observedTrainIndex observedTestIndex : List ℕ) : Prop :=\n  Disjoint observedTrainIndex.toFinset observedTestIndex.toFinset ∧\n  observedTrainIndex.toFinset ∪ observedTestIndex.toFinset = Finset.range sampleCount",
+      "proposition": "abbrev R18 (observedSplitArguments : List (String × String)) : Prop := observedSplitArguments = splitArguments",
       "main": false,
       "kind": "",
       "verifier": "GitHub"
     },
     {
       "id": "R19",
-      "group": "信頼性条件 / 宣言どおりに実行されたか / 当てはめ",
-      "explanation": "実行が当てはめに呼んだ関数は，宣言した関数と一致する。",
+      "group": "信頼性条件 / 宣言どおりに実行されたか / 分割",
+      "explanation": "実行が使った訓練データの行とテストデータの行は，重ならず，合わせると宣言した全件になる。",
       "definitions": "",
-      "proposition": "abbrev R19 (observedFitFunction : String) : Prop := observedFitFunction = fitFunction",
+      "proposition": "abbrev R19 (observedTrainIndex observedTestIndex : List ℕ) : Prop :=\n  Disjoint observedTrainIndex.toFinset observedTestIndex.toFinset ∧\n  observedTrainIndex.toFinset ∪ observedTestIndex.toFinset = Finset.range sampleCount",
       "main": false,
       "kind": "",
       "verifier": "GitHub"
@@ -423,9 +453,9 @@
     {
       "id": "R20",
       "group": "信頼性条件 / 宣言どおりに実行されたか / 当てはめ",
-      "explanation": "実行が当てはめたときの LinearRegression のパラメータは，宣言したパラメータと一致する。",
+      "explanation": "実行が当てはめに呼んだ関数は，宣言した関数と一致する。",
       "definitions": "",
-      "proposition": "abbrev R20 (observedFitParameters : List (String × String)) : Prop := observedFitParameters = fitParameters",
+      "proposition": "abbrev R20 (observedFitFunction : String) : Prop := observedFitFunction = fitFunction",
       "main": false,
       "kind": "",
       "verifier": "GitHub"
@@ -433,9 +463,9 @@
     {
       "id": "R21",
       "group": "信頼性条件 / 宣言どおりに実行されたか / 当てはめ",
-      "explanation": "実行が当てはめに使った説明変数の数は，宣言した説明変数の数と一致する。",
+      "explanation": "実行が当てはめたときの LinearRegression のパラメータは，宣言したパラメータと一致する。",
       "definitions": "",
-      "proposition": "abbrev R21 (observedFitFeatureCount : ℕ) : Prop := observedFitFeatureCount = featureCount",
+      "proposition": "abbrev R21 (observedFitParameters : List (String × String)) : Prop := observedFitParameters = fitParameters",
       "main": false,
       "kind": "",
       "verifier": "GitHub"
@@ -443,19 +473,19 @@
     {
       "id": "R22",
       "group": "信頼性条件 / 宣言どおりに実行されたか / 当てはめ",
-      "explanation": "実行が当てはめに渡した説明変数と目的変数は，読み込んだファイルの訓練データの行そのものである（加工していない）。",
+      "explanation": "実行が当てはめに使った説明変数の数は，宣言した説明変数の数と一致する。",
       "definitions": "",
-      "proposition": "abbrev R22 (observedFitInputSha256 loadedTrainRowsSha256 : String) : Prop :=\n  observedFitInputSha256 = loadedTrainRowsSha256",
+      "proposition": "abbrev R22 (observedFitFeatureCount : ℕ) : Prop := observedFitFeatureCount = featureCount",
       "main": false,
       "kind": "",
       "verifier": "GitHub"
     },
     {
       "id": "R23",
-      "group": "信頼性条件 / 宣言どおりに実行されたか / 予測",
-      "explanation": "実行が予測に呼んだ関数は，宣言した関数と一致する。",
+      "group": "信頼性条件 / 宣言どおりに実行されたか / 当てはめ",
+      "explanation": "実行が当てはめに渡した説明変数と目的変数は，読み込んだファイルの訓練データの行そのものである（加工していない）。",
       "definitions": "",
-      "proposition": "abbrev R23 (observedPredictFunction : String) : Prop := observedPredictFunction = predictFunction",
+      "proposition": "abbrev R23 (observedFitInputSha256 loadedTrainRowsSha256 : String) : Prop :=\n  observedFitInputSha256 = loadedTrainRowsSha256",
       "main": false,
       "kind": "",
       "verifier": "GitHub"
@@ -463,19 +493,19 @@
     {
       "id": "R24",
       "group": "信頼性条件 / 宣言どおりに実行されたか / 予測",
-      "explanation": "実行が予測に渡した説明変数は，読み込んだファイルのテストデータの行そのものである（加工していない）。",
+      "explanation": "実行が予測に呼んだ関数は，宣言した関数と一致する。",
       "definitions": "",
-      "proposition": "abbrev R24 (observedPredictInputSha256 loadedTestFeaturesSha256 : String) : Prop :=\n  observedPredictInputSha256 = loadedTestFeaturesSha256",
+      "proposition": "abbrev R24 (observedPredictFunction : String) : Prop := observedPredictFunction = predictFunction",
       "main": false,
       "kind": "",
       "verifier": "GitHub"
     },
     {
       "id": "R25",
-      "group": "信頼性条件 / 宣言どおりに実行されたか / MSE",
-      "explanation": "実行が MSE の計算に呼んだ関数は，宣言した関数と一致する。",
+      "group": "信頼性条件 / 宣言どおりに実行されたか / 予測",
+      "explanation": "実行が予測に渡した説明変数は，読み込んだファイルのテストデータの行そのものである（加工していない）。",
       "definitions": "",
-      "proposition": "abbrev R25 (observedMseFunction : String) : Prop := observedMseFunction = mseFunction",
+      "proposition": "abbrev R25 (observedPredictInputSha256 loadedTestFeaturesSha256 : String) : Prop :=\n  observedPredictInputSha256 = loadedTestFeaturesSha256",
       "main": false,
       "kind": "",
       "verifier": "GitHub"
@@ -483,19 +513,19 @@
     {
       "id": "R26",
       "group": "信頼性条件 / 宣言どおりに実行されたか / MSE",
-      "explanation": "実行が MSE の計算に渡した目的変数は，読み込んだファイルのテストデータの行そのものである（加工していない）。",
+      "explanation": "実行が MSE の計算に呼んだ関数は，宣言した関数と一致する。",
       "definitions": "",
-      "proposition": "abbrev R26 (observedMseTargetSha256 loadedTestTargetSha256 : String) : Prop :=\n  observedMseTargetSha256 = loadedTestTargetSha256",
+      "proposition": "abbrev R26 (observedMseFunction : String) : Prop := observedMseFunction = mseFunction",
       "main": false,
       "kind": "",
       "verifier": "GitHub"
     },
     {
       "id": "R27",
-      "group": "信頼性条件 / 宣言どおりに実行されたか / 計算環境",
-      "explanation": "実行が使った OS（GitHub Actions の runner の種類）は，宣言した OS と一致する。",
+      "group": "信頼性条件 / 宣言どおりに実行されたか / MSE",
+      "explanation": "実行が MSE の計算に渡した目的変数は，読み込んだファイルのテストデータの行そのものである（加工していない）。",
       "definitions": "",
-      "proposition": "abbrev R27 (observedOperatingSystem : String) : Prop := observedOperatingSystem = operatingSystem",
+      "proposition": "abbrev R27 (observedMseTargetSha256 loadedTestTargetSha256 : String) : Prop :=\n  observedMseTargetSha256 = loadedTestTargetSha256",
       "main": false,
       "kind": "",
       "verifier": "GitHub"
@@ -503,9 +533,9 @@
     {
       "id": "R28",
       "group": "信頼性条件 / 宣言どおりに実行されたか / 計算環境",
-      "explanation": "実行が使った CPU のアーキテクチャは，宣言したアーキテクチャと一致する。",
+      "explanation": "実行が使った OS（GitHub Actions の runner の種類）は，宣言した OS と一致する。",
       "definitions": "",
-      "proposition": "abbrev R28 (observedCpuArchitecture : String) : Prop := observedCpuArchitecture = cpuArchitecture",
+      "proposition": "abbrev R28 (observedOperatingSystem : String) : Prop := observedOperatingSystem = operatingSystem",
       "main": false,
       "kind": "",
       "verifier": "GitHub"
@@ -513,9 +543,9 @@
     {
       "id": "R29",
       "group": "信頼性条件 / 宣言どおりに実行されたか / 計算環境",
-      "explanation": "実行が使った計算機のコア数は，宣言したコア数と一致する。",
+      "explanation": "実行が使った CPU のアーキテクチャは，宣言したアーキテクチャと一致する。",
       "definitions": "",
-      "proposition": "abbrev R29 (observedCpuCount : ℕ) : Prop := observedCpuCount = cpuCount",
+      "proposition": "abbrev R29 (observedCpuArchitecture : String) : Prop := observedCpuArchitecture = cpuArchitecture",
       "main": false,
       "kind": "",
       "verifier": "GitHub"
@@ -523,29 +553,39 @@
     {
       "id": "R30",
       "group": "信頼性条件 / 宣言どおりに実行されたか / 計算環境",
-      "explanation": "実行が使った計算機のメモリ（GiB の端数を切り上げたもの）は，宣言したメモリと一致する。",
+      "explanation": "実行が使った計算機のコア数は，宣言したコア数と一致する。",
       "definitions": "",
-      "proposition": "abbrev R30 (observedMemoryGibibytes : ℕ) : Prop := observedMemoryGibibytes = memoryGibibytes",
+      "proposition": "abbrev R30 (observedCpuCount : ℕ) : Prop := observedCpuCount = cpuCount",
       "main": false,
       "kind": "",
       "verifier": "GitHub"
     },
     {
       "id": "R31",
-      "group": "信頼性条件 / HARKing をしていない",
-      "explanation": "本番の run は，失敗したものも含めてすべて，判定に使う宣言と同じ宣言の commit から起動された。\n- 宣言は，claims.json から検証の結果を除いたもの\n- 最初の本番の run より前に宣言があり，その後に宣言を書き換えていないことを示す",
+      "group": "信頼性条件 / 宣言どおりに実行されたか / 計算環境",
+      "explanation": "実行が使った計算機のメモリ（GiB の端数を切り上げたもの）は，宣言したメモリと一致する。",
       "definitions": "",
-      "proposition": "abbrev R31 (fullRunDeclarationSha256s : List String) (verifiedDeclarationSha256 : String) : Prop :=\n  ∀ sha256 ∈ fullRunDeclarationSha256s, sha256 = verifiedDeclarationSha256",
+      "proposition": "abbrev R31 (observedMemoryGibibytes : ℕ) : Prop := observedMemoryGibibytes = memoryGibibytes",
       "main": false,
       "kind": "",
       "verifier": "GitHub"
     },
     {
       "id": "R32",
+      "group": "信頼性条件 / HARKing をしていない",
+      "explanation": "本番の run は，失敗したものも含めてすべて，判定に使う宣言と同じ宣言の commit から起動された。\n- 宣言は，claims.json から検証の結果を除いたもの\n- 最初の本番の run より前に宣言があり，その後に宣言を書き換えていないことを示す",
+      "definitions": "",
+      "proposition": "abbrev R32 (fullRunDeclarationSha256s : List String) (verifiedDeclarationSha256 : String) : Prop :=\n  ∀ sha256 ∈ fullRunDeclarationSha256s, sha256 = verifiedDeclarationSha256",
+      "main": false,
+      "kind": "",
+      "verifier": "GitHub"
+    },
+    {
+      "id": "R33",
       "group": "信頼性条件 / チェリーピッキングをしていない",
       "explanation": "成功した本番の run が出力した MSE は，すべて，判定に使う MSE と一致する。",
       "definitions": "",
-      "proposition": "abbrev R32 (fullRunTestMses : List ℚ) (outputTestMse : ℚ) : Prop := ∀ mse ∈ fullRunTestMses, mse = outputTestMse",
+      "proposition": "abbrev R33 (fullRunTestMses : List ℚ) (outputTestMse : ℚ) : Prop := ∀ mse ∈ fullRunTestMses, mse = outputTestMse",
       "main": false,
       "kind": "",
       "verifier": "GitHub"
@@ -858,6 +898,15 @@
       "query": "experiment_output",
       "args": {
         "key": "memoryGibibytes"
+      }
+    },
+    "observedFetchedUrls": {
+      "type": "List String",
+      "meaning": "取得の記録にある URL",
+      "verifier": "GitHub",
+      "query": "artifact_json_keys",
+      "args": {
+        "path": "fetched_urls.json"
       }
     }
   },
