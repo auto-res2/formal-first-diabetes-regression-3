@@ -69,6 +69,15 @@
           "C01",
           "R01"
         ]
+      },
+      "result": {
+        "status": "verified",
+        "verdict": "偽",
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ]
       }
     },
     {
@@ -87,6 +96,15 @@
           "C02"
         ],
         "by_comparison": true
+      },
+      "result": {
+        "status": "verified",
+        "verdict": "偽",
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ]
       }
     },
     {
@@ -97,7 +115,16 @@
       "proposition": "abbrev C02 : Prop :=\n  C03 ∧ C04 ∧ C05 ∧ C06 ∧ C07 ∧ C08 ∧ C09 ∧ C10 ∧ ∃ mse : ℚ, mse = specifiedTestMse",
       "main": false,
       "kind": "declaration",
-      "verifier": "Lean"
+      "verifier": "Lean",
+      "result": {
+        "status": "verified",
+        "verdict": "真",
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ]
+      }
     },
     {
       "id": "C03",
@@ -107,7 +134,12 @@
       "proposition": "abbrev C03 : Prop :=\n  datasetUrl = \"https://www4.stat.ncsu.edu/~boos/var.select/diabetes.tab.txt\" ∧\n  datasetSha256 = \"4733febee697862c22139cdac87478a300ce0d101593deb07ed6c0f3328a99cd\" ∧\n  sampleCount = 442 ∧ featureCount = 10 ∧\n  featureColumns = [\"AGE\", \"SEX\", \"BMI\", \"BP\", \"S1\", \"S2\", \"S3\", \"S4\", \"S5\", \"S6\"] ∧ targetColumn = \"Y\"",
       "main": false,
       "kind": "declaration",
-      "verifier": "Lean"
+      "verifier": "Lean",
+      "result": {
+        "status": "verified",
+        "verdict": "真",
+        "axioms": []
+      }
     },
     {
       "id": "C04",
@@ -117,7 +149,16 @@
       "proposition": "abbrev C04 : Prop :=\n  loadFunction = \"numpy.loadtxt\" ∧ loadArguments = [(\"skiprows\", \"1\")] ∧\n  features = loadedFeatures [(\"skiprows\", \"1\")] ∧ target = loadedTarget [(\"skiprows\", \"1\")]",
       "main": false,
       "kind": "declaration",
-      "verifier": "Lean"
+      "verifier": "Lean",
+      "result": {
+        "status": "verified",
+        "verdict": "真",
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ]
+      }
     },
     {
       "id": "C05",
@@ -127,7 +168,16 @@
       "proposition": "abbrev C05 : Prop :=\n  splitFunction = \"sklearn.model_selection.train_test_split\" ∧\n  splitArguments = [(\"test_size\", \"0.2\"), (\"random_state\", \"0\")] ∧\n  testRows = trainTestSplit [(\"test_size\", \"0.2\"), (\"random_state\", \"0\")] ∧ trainRows = testRowsᶜ",
       "main": false,
       "kind": "declaration",
-      "verifier": "Lean"
+      "verifier": "Lean",
+      "result": {
+        "status": "verified",
+        "verdict": "真",
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ]
+      }
     },
     {
       "id": "C06",
@@ -137,7 +187,16 @@
       "proposition": "abbrev C06 : Prop :=\n  fitFunction = \"sklearn.linear_model.LinearRegression.fit\" ∧\n  fitParameters =\n    [(\"copy_X\", \"True\"), (\"fit_intercept\", \"True\"), (\"n_jobs\", \"None\"), (\"positive\", \"False\"), (\"tol\", \"1e-06\")] ∧\n  fittedModel = fit fitParameters trainRows features target",
       "main": false,
       "kind": "declaration",
-      "verifier": "Lean"
+      "verifier": "Lean",
+      "result": {
+        "status": "verified",
+        "verdict": "真",
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ]
+      }
     },
     {
       "id": "C07",
@@ -147,7 +206,16 @@
       "proposition": "abbrev C07 : Prop :=\n  predictFunction = \"sklearn.linear_model.LinearRegression.predict\" ∧\n  prediction = fun i => predict fittedModel (features i)",
       "main": false,
       "kind": "declaration",
-      "verifier": "Lean"
+      "verifier": "Lean",
+      "result": {
+        "status": "verified",
+        "verdict": "真",
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ]
+      }
     },
     {
       "id": "C08",
@@ -157,7 +225,16 @@
       "proposition": "abbrev C08 : Prop :=\n  mseFunction = \"sklearn.metrics.mean_squared_error\" ∧\n  specifiedTestMse = meanSquaredError testRows target prediction",
       "main": false,
       "kind": "declaration",
-      "verifier": "Lean"
+      "verifier": "Lean",
+      "result": {
+        "status": "verified",
+        "verdict": "真",
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ]
+      }
     },
     {
       "id": "C09",
@@ -167,7 +244,12 @@
       "proposition": "abbrev C09 : Prop :=\n  operatingSystem = \"ubuntu-24.04\" ∧ cpuArchitecture = \"x86_64\" ∧ cpuCount = 4 ∧ memoryGibibytes = 16",
       "main": false,
       "kind": "declaration",
-      "verifier": "Lean"
+      "verifier": "Lean",
+      "result": {
+        "status": "verified",
+        "verdict": "真",
+        "axioms": []
+      }
     },
     {
       "id": "C10",
@@ -177,7 +259,12 @@
       "proposition": "abbrev C10 : Prop := repositoryCommit = \"275ea5c7e3c531c57f202ad76609d8234a55fe46\"",
       "main": false,
       "kind": "declaration",
-      "verifier": "Lean"
+      "verifier": "Lean",
+      "result": {
+        "status": "verified",
+        "verdict": "真",
+        "axioms": []
+      }
     },
     {
       "id": "R01",
@@ -198,6 +285,18 @@
           "R32",
           "R33"
         ]
+      },
+      "result": {
+        "status": "verified",
+        "verdict": "真",
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "R02_axiom",
+          "R03_axiom",
+          "R04_axiom",
+          "propext"
+        ]
       }
     },
     {
@@ -209,7 +308,12 @@
       "main": false,
       "kind": "axiom",
       "verifier": null,
-      "unverifiable": "文献が示すファイルを特定する検証器が無い"
+      "unverifiable": "文献が示すファイルを特定する検証器が無い",
+      "result": {
+        "status": "unverifiable",
+        "reason": "文献が示すファイルを特定する検証器が無い",
+        "axiom": "R02_axiom"
+      }
     },
     {
       "id": "R03",
@@ -220,7 +324,12 @@
       "main": false,
       "kind": "axiom",
       "verifier": null,
-      "unverifiable": "コードの振る舞いを判定する検証器が無い"
+      "unverifiable": "コードの振る舞いを判定する検証器が無い",
+      "result": {
+        "status": "unverifiable",
+        "reason": "コードの振る舞いを判定する検証器が無い",
+        "axiom": "R03_axiom"
+      }
     },
     {
       "id": "R04",
@@ -231,7 +340,12 @@
       "main": false,
       "kind": "axiom",
       "verifier": null,
-      "unverifiable": "ライブラリの中身を判定する検証器が無い"
+      "unverifiable": "ライブラリの中身を判定する検証器が無い",
+      "result": {
+        "status": "unverifiable",
+        "reason": "ライブラリの中身を判定する検証器が無い",
+        "axiom": "R04_axiom"
+      }
     },
     {
       "id": "R05",
@@ -300,6 +414,16 @@
           "R31": "(h .environment).2.2.2.2",
           "R06": "(h .repositoryCommit).2"
         }
+      },
+      "result": {
+        "status": "verified",
+        "verdict": "真",
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "R02_axiom",
+          "propext"
+        ]
       }
     },
     {
@@ -310,7 +434,12 @@
       "proposition": "abbrev R06 (observedRepositoryCommit : String) : Prop := observedRepositoryCommit = repositoryCommit",
       "main": false,
       "kind": "",
-      "verifier": "GitHub"
+      "verifier": "GitHub",
+      "result": {
+        "status": "verified",
+        "verdict": "真",
+        "axioms": []
+      }
     },
     {
       "id": "R07",
@@ -320,7 +449,12 @@
       "proposition": "abbrev R07 (observedDataSha256 : String) : Prop := observedDataSha256 = datasetSha256",
       "main": false,
       "kind": "",
-      "verifier": "GitHub"
+      "verifier": "GitHub",
+      "result": {
+        "status": "verified",
+        "verdict": "真",
+        "axioms": []
+      }
     },
     {
       "id": "R08",
@@ -330,7 +464,12 @@
       "proposition": "abbrev R08 (observedFetchedUrls : List String) : Prop := observedFetchedUrls = [datasetUrl]",
       "main": false,
       "kind": "",
-      "verifier": "GitHub"
+      "verifier": "GitHub",
+      "result": {
+        "status": "verified",
+        "verdict": "真",
+        "axioms": []
+      }
     },
     {
       "id": "R09",
@@ -340,7 +479,12 @@
       "proposition": "abbrev R09 (fetchedSha256 : String) : Prop := fetchedSha256 = datasetSha256",
       "main": false,
       "kind": "",
-      "verifier": "GitHub"
+      "verifier": "GitHub",
+      "result": {
+        "status": "verified",
+        "verdict": "真",
+        "axioms": []
+      }
     },
     {
       "id": "R10",
@@ -358,6 +502,13 @@
           "R07",
           "R09"
         ]
+      },
+      "result": {
+        "status": "verified",
+        "verdict": "真",
+        "axioms": [
+          "R02_axiom"
+        ]
       }
     },
     {
@@ -368,7 +519,12 @@
       "proposition": "abbrev R11 (observedSampleCount : ℕ) : Prop := observedSampleCount = sampleCount",
       "main": false,
       "kind": "",
-      "verifier": "GitHub"
+      "verifier": "GitHub",
+      "result": {
+        "status": "verified",
+        "verdict": "真",
+        "axioms": []
+      }
     },
     {
       "id": "R12",
@@ -378,7 +534,12 @@
       "proposition": "abbrev R12 (observedFeatureCount : ℕ) : Prop := observedFeatureCount = featureCount",
       "main": false,
       "kind": "",
-      "verifier": "GitHub"
+      "verifier": "GitHub",
+      "result": {
+        "status": "verified",
+        "verdict": "真",
+        "axioms": []
+      }
     },
     {
       "id": "R13",
@@ -388,7 +549,12 @@
       "proposition": "abbrev R13 (observedFeatureColumns : List String) : Prop := observedFeatureColumns = featureColumns",
       "main": false,
       "kind": "",
-      "verifier": "GitHub"
+      "verifier": "GitHub",
+      "result": {
+        "status": "verified",
+        "verdict": "真",
+        "axioms": []
+      }
     },
     {
       "id": "R14",
@@ -398,7 +564,12 @@
       "proposition": "abbrev R14 (observedTargetColumn : String) : Prop := observedTargetColumn = targetColumn",
       "main": false,
       "kind": "",
-      "verifier": "GitHub"
+      "verifier": "GitHub",
+      "result": {
+        "status": "verified",
+        "verdict": "真",
+        "axioms": []
+      }
     },
     {
       "id": "R15",
@@ -408,7 +579,12 @@
       "proposition": "abbrev R15 (observedLoadFunction : String) : Prop := observedLoadFunction = loadFunction",
       "main": false,
       "kind": "",
-      "verifier": "GitHub"
+      "verifier": "GitHub",
+      "result": {
+        "status": "verified",
+        "verdict": "真",
+        "axioms": []
+      }
     },
     {
       "id": "R16",
@@ -418,7 +594,12 @@
       "proposition": "abbrev R16 (observedLoadArguments : List (String × String)) : Prop := observedLoadArguments = loadArguments",
       "main": false,
       "kind": "",
-      "verifier": "GitHub"
+      "verifier": "GitHub",
+      "result": {
+        "status": "verified",
+        "verdict": "真",
+        "axioms": []
+      }
     },
     {
       "id": "R17",
@@ -428,7 +609,12 @@
       "proposition": "abbrev R17 (observedSplitFunction : String) : Prop := observedSplitFunction = splitFunction",
       "main": false,
       "kind": "",
-      "verifier": "GitHub"
+      "verifier": "GitHub",
+      "result": {
+        "status": "verified",
+        "verdict": "真",
+        "axioms": []
+      }
     },
     {
       "id": "R18",
@@ -438,7 +624,12 @@
       "proposition": "abbrev R18 (observedSplitArguments : List (String × String)) : Prop := observedSplitArguments = splitArguments",
       "main": false,
       "kind": "",
-      "verifier": "GitHub"
+      "verifier": "GitHub",
+      "result": {
+        "status": "verified",
+        "verdict": "真",
+        "axioms": []
+      }
     },
     {
       "id": "R19",
@@ -448,7 +639,16 @@
       "proposition": "abbrev R19 (observedTrainIndex observedTestIndex : List ℕ) : Prop :=\n  Disjoint observedTrainIndex.toFinset observedTestIndex.toFinset ∧\n  observedTrainIndex.toFinset ∪ observedTestIndex.toFinset = Finset.range sampleCount",
       "main": false,
       "kind": "",
-      "verifier": "GitHub"
+      "verifier": "GitHub",
+      "result": {
+        "status": "verified",
+        "verdict": "真",
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ]
+      }
     },
     {
       "id": "R20",
@@ -458,7 +658,12 @@
       "proposition": "abbrev R20 (observedFitFunction : String) : Prop := observedFitFunction = fitFunction",
       "main": false,
       "kind": "",
-      "verifier": "GitHub"
+      "verifier": "GitHub",
+      "result": {
+        "status": "verified",
+        "verdict": "真",
+        "axioms": []
+      }
     },
     {
       "id": "R21",
@@ -468,7 +673,12 @@
       "proposition": "abbrev R21 (observedFitParameters : List (String × String)) : Prop := observedFitParameters = fitParameters",
       "main": false,
       "kind": "",
-      "verifier": "GitHub"
+      "verifier": "GitHub",
+      "result": {
+        "status": "verified",
+        "verdict": "真",
+        "axioms": []
+      }
     },
     {
       "id": "R22",
@@ -478,7 +688,12 @@
       "proposition": "abbrev R22 (observedFitFeatureCount : ℕ) : Prop := observedFitFeatureCount = featureCount",
       "main": false,
       "kind": "",
-      "verifier": "GitHub"
+      "verifier": "GitHub",
+      "result": {
+        "status": "verified",
+        "verdict": "真",
+        "axioms": []
+      }
     },
     {
       "id": "R23",
@@ -488,7 +703,12 @@
       "proposition": "abbrev R23 (observedFitInputSha256 loadedTrainRowsSha256 : String) : Prop :=\n  observedFitInputSha256 = loadedTrainRowsSha256",
       "main": false,
       "kind": "",
-      "verifier": "GitHub"
+      "verifier": "GitHub",
+      "result": {
+        "status": "verified",
+        "verdict": "真",
+        "axioms": []
+      }
     },
     {
       "id": "R24",
@@ -498,7 +718,12 @@
       "proposition": "abbrev R24 (observedPredictFunction : String) : Prop := observedPredictFunction = predictFunction",
       "main": false,
       "kind": "",
-      "verifier": "GitHub"
+      "verifier": "GitHub",
+      "result": {
+        "status": "verified",
+        "verdict": "真",
+        "axioms": []
+      }
     },
     {
       "id": "R25",
@@ -508,7 +733,12 @@
       "proposition": "abbrev R25 (observedPredictInputSha256 loadedTestFeaturesSha256 : String) : Prop :=\n  observedPredictInputSha256 = loadedTestFeaturesSha256",
       "main": false,
       "kind": "",
-      "verifier": "GitHub"
+      "verifier": "GitHub",
+      "result": {
+        "status": "verified",
+        "verdict": "真",
+        "axioms": []
+      }
     },
     {
       "id": "R26",
@@ -518,7 +748,12 @@
       "proposition": "abbrev R26 (observedMseFunction : String) : Prop := observedMseFunction = mseFunction",
       "main": false,
       "kind": "",
-      "verifier": "GitHub"
+      "verifier": "GitHub",
+      "result": {
+        "status": "verified",
+        "verdict": "真",
+        "axioms": []
+      }
     },
     {
       "id": "R27",
@@ -528,7 +763,12 @@
       "proposition": "abbrev R27 (observedMseTargetSha256 loadedTestTargetSha256 : String) : Prop :=\n  observedMseTargetSha256 = loadedTestTargetSha256",
       "main": false,
       "kind": "",
-      "verifier": "GitHub"
+      "verifier": "GitHub",
+      "result": {
+        "status": "verified",
+        "verdict": "真",
+        "axioms": []
+      }
     },
     {
       "id": "R28",
@@ -538,7 +778,12 @@
       "proposition": "abbrev R28 (observedOperatingSystem : String) : Prop := observedOperatingSystem = operatingSystem",
       "main": false,
       "kind": "",
-      "verifier": "GitHub"
+      "verifier": "GitHub",
+      "result": {
+        "status": "verified",
+        "verdict": "真",
+        "axioms": []
+      }
     },
     {
       "id": "R29",
@@ -548,7 +793,12 @@
       "proposition": "abbrev R29 (observedCpuArchitecture : String) : Prop := observedCpuArchitecture = cpuArchitecture",
       "main": false,
       "kind": "",
-      "verifier": "GitHub"
+      "verifier": "GitHub",
+      "result": {
+        "status": "verified",
+        "verdict": "真",
+        "axioms": []
+      }
     },
     {
       "id": "R30",
@@ -558,7 +808,12 @@
       "proposition": "abbrev R30 (observedCpuCount : ℕ) : Prop := observedCpuCount = cpuCount",
       "main": false,
       "kind": "",
-      "verifier": "GitHub"
+      "verifier": "GitHub",
+      "result": {
+        "status": "verified",
+        "verdict": "真",
+        "axioms": []
+      }
     },
     {
       "id": "R31",
@@ -568,7 +823,12 @@
       "proposition": "abbrev R31 (observedMemoryGibibytes : ℕ) : Prop := observedMemoryGibibytes = memoryGibibytes",
       "main": false,
       "kind": "",
-      "verifier": "GitHub"
+      "verifier": "GitHub",
+      "result": {
+        "status": "verified",
+        "verdict": "真",
+        "axioms": []
+      }
     },
     {
       "id": "R32",
@@ -578,7 +838,12 @@
       "proposition": "abbrev R32 (fullRunDeclarationSha256s : List String) (verifiedDeclarationSha256 : String) : Prop :=\n  ∀ sha256 ∈ fullRunDeclarationSha256s, sha256 = verifiedDeclarationSha256",
       "main": false,
       "kind": "",
-      "verifier": "GitHub"
+      "verifier": "GitHub",
+      "result": {
+        "status": "verified",
+        "verdict": "真",
+        "axioms": []
+      }
     },
     {
       "id": "R33",
@@ -588,7 +853,16 @@
       "proposition": "abbrev R33 (fullRunTestMses : List ℚ) (outputTestMse : ℚ) : Prop := ∀ mse ∈ fullRunTestMses, mse = outputTestMse",
       "main": false,
       "kind": "",
-      "verifier": "GitHub"
+      "verifier": "GitHub",
+      "result": {
+        "status": "verified",
+        "verdict": "真",
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ]
+      }
     }
   ],
   "variables": {
@@ -599,6 +873,11 @@
       "query": "experiment_output",
       "args": {
         "key": "testMse"
+      },
+      "verified": {
+        "value": "8560648335746739/2500000000000",
+        "mode": "full",
+        "verify_run": "45442907114"
       }
     },
     "observedDataSha256": {
@@ -608,6 +887,11 @@
       "query": "artifact_file_sha256",
       "args": {
         "path": "outputs/data/diabetes.tab.txt"
+      },
+      "verified": {
+        "value": "4733febee697862c22139cdac87478a300ce0d101593deb07ed6c0f3328a99cd",
+        "mode": "full",
+        "verify_run": "45442907114"
       }
     },
     "fetchedSha256": {
@@ -618,6 +902,11 @@
       "args": {
         "path": "fetched_urls.json",
         "key": "https://www4.stat.ncsu.edu/~boos/var.select/diabetes.tab.txt"
+      },
+      "verified": {
+        "value": "4733febee697862c22139cdac87478a300ce0d101593deb07ed6c0f3328a99cd",
+        "mode": "full",
+        "verify_run": "45442907114"
       }
     },
     "observedSampleCount": {
@@ -627,6 +916,11 @@
       "query": "experiment_output",
       "args": {
         "key": "sampleCount"
+      },
+      "verified": {
+        "value": 442,
+        "mode": "full",
+        "verify_run": "45442907114"
       }
     },
     "observedFeatureCount": {
@@ -636,6 +930,11 @@
       "query": "experiment_output",
       "args": {
         "key": "featureCount"
+      },
+      "verified": {
+        "value": 10,
+        "mode": "full",
+        "verify_run": "45442907114"
       }
     },
     "observedFeatureColumns": {
@@ -645,6 +944,22 @@
       "query": "experiment_output",
       "args": {
         "key": "featureColumns"
+      },
+      "verified": {
+        "value": [
+          "AGE",
+          "SEX",
+          "BMI",
+          "BP",
+          "S1",
+          "S2",
+          "S3",
+          "S4",
+          "S5",
+          "S6"
+        ],
+        "mode": "full",
+        "verify_run": "45442907114"
       }
     },
     "observedTargetColumn": {
@@ -654,6 +969,11 @@
       "query": "experiment_output",
       "args": {
         "key": "targetColumn"
+      },
+      "verified": {
+        "value": "Y",
+        "mode": "full",
+        "verify_run": "45442907114"
       }
     },
     "observedLoadFunction": {
@@ -663,6 +983,11 @@
       "query": "experiment_output",
       "args": {
         "key": "loadFunction"
+      },
+      "verified": {
+        "value": "numpy.loadtxt",
+        "mode": "full",
+        "verify_run": "45442907114"
       }
     },
     "observedLoadArguments": {
@@ -672,6 +997,16 @@
       "query": "experiment_output",
       "args": {
         "key": "loadArguments"
+      },
+      "verified": {
+        "value": [
+          [
+            "skiprows",
+            "1"
+          ]
+        ],
+        "mode": "full",
+        "verify_run": "45442907114"
       }
     },
     "observedSplitFunction": {
@@ -681,6 +1016,11 @@
       "query": "experiment_output",
       "args": {
         "key": "splitFunction"
+      },
+      "verified": {
+        "value": "sklearn.model_selection.train_test_split",
+        "mode": "full",
+        "verify_run": "45442907114"
       }
     },
     "observedSplitArguments": {
@@ -690,6 +1030,20 @@
       "query": "experiment_output",
       "args": {
         "key": "splitArguments"
+      },
+      "verified": {
+        "value": [
+          [
+            "test_size",
+            "0.2"
+          ],
+          [
+            "random_state",
+            "0"
+          ]
+        ],
+        "mode": "full",
+        "verify_run": "45442907114"
       }
     },
     "observedTrainIndex": {
@@ -699,6 +1053,365 @@
       "query": "experiment_output",
       "args": {
         "key": "trainIndex"
+      },
+      "verified": {
+        "value": [
+          74,
+          26,
+          45,
+          389,
+          154,
+          4,
+          386,
+          225,
+          327,
+          264,
+          8,
+          190,
+          5,
+          371,
+          200,
+          313,
+          7,
+          325,
+          366,
+          22,
+          68,
+          437,
+          20,
+          353,
+          281,
+          14,
+          300,
+          240,
+          175,
+          405,
+          153,
+          75,
+          64,
+          55,
+          135,
+          329,
+          81,
+          316,
+          369,
+          328,
+          414,
+          421,
+          361,
+          415,
+          232,
+          224,
+          252,
+          254,
+          418,
+          106,
+          278,
+          63,
+          336,
+          378,
+          387,
+          430,
+          89,
+          93,
+          245,
+          272,
+          241,
+          92,
+          18,
+          145,
+          150,
+          322,
+          393,
+          297,
+          231,
+          66,
+          380,
+          412,
+          140,
+          101,
+          345,
+          247,
+          363,
+          17,
+          146,
+          315,
+          220,
+          30,
+          114,
+          235,
+          103,
+          219,
+          274,
+          176,
+          191,
+          116,
+          168,
+          367,
+          120,
+          218,
+          112,
+          303,
+          136,
+          308,
+          221,
+          126,
+          196,
+          332,
+          424,
+          133,
+          33,
+          419,
+          162,
+          34,
+          44,
+          97,
+          85,
+          61,
+          167,
+          199,
+          173,
+          229,
+          236,
+          433,
+          376,
+          250,
+          108,
+          407,
+          46,
+          357,
+          372,
+          263,
+          73,
+          137,
+          422,
+          246,
+          253,
+          29,
+          181,
+          374,
+          301,
+          51,
+          365,
+          391,
+          217,
+          432,
+          27,
+          2,
+          259,
+          156,
+          255,
+          417,
+          346,
+          138,
+          212,
+          104,
+          310,
+          306,
+          311,
+          215,
+          348,
+          189,
+          214,
+          35,
+          230,
+          204,
+          234,
+          293,
+          239,
+          210,
+          67,
+          24,
+          295,
+          216,
+          223,
+          129,
+          111,
+          166,
+          349,
+          40,
+          317,
+          79,
+          431,
+          350,
+          13,
+          364,
+          436,
+          228,
+          161,
+          83,
+          439,
+          416,
+          110,
+          149,
+          152,
+          16,
+          299,
+          109,
+          312,
+          139,
+          237,
+          260,
+          318,
+          355,
+          248,
+          342,
+          19,
+          269,
+          226,
+          340,
+          3,
+          309,
+          125,
+          280,
+          286,
+          77,
+          184,
+          354,
+          420,
+          275,
+          294,
+          384,
+          182,
+          395,
+          80,
+          307,
+          258,
+          11,
+          331,
+          86,
+          266,
+          36,
+          423,
+          58,
+          41,
+          270,
+          50,
+          209,
+          352,
+          351,
+          368,
+          123,
+          222,
+          62,
+          379,
+          130,
+          187,
+          23,
+          43,
+          0,
+          201,
+          377,
+          98,
+          304,
+          429,
+          178,
+          256,
+          94,
+          409,
+          95,
+          390,
+          169,
+          69,
+          305,
+          48,
+          341,
+          207,
+          279,
+          227,
+          148,
+          143,
+          334,
+          180,
+          356,
+          131,
+          425,
+          440,
+          262,
+          324,
+          203,
+          84,
+          121,
+          383,
+          406,
+          91,
+          82,
+          267,
+          119,
+          358,
+          291,
+          57,
+          321,
+          257,
+          394,
+          42,
+          105,
+          408,
+          273,
+          392,
+          38,
+          53,
+          385,
+          128,
+          290,
+          28,
+          183,
+          370,
+          163,
+          151,
+          244,
+          202,
+          31,
+          32,
+          127,
+          185,
+          413,
+          288,
+          398,
+          402,
+          147,
+          285,
+          410,
+          177,
+          99,
+          338,
+          335,
+          197,
+          243,
+          115,
+          404,
+          265,
+          72,
+          333,
+          25,
+          165,
+          337,
+          426,
+          174,
+          428,
+          39,
+          193,
+          314,
+          396,
+          88,
+          70,
+          87,
+          292,
+          242,
+          277,
+          211,
+          9,
+          359,
+          195,
+          251,
+          323,
+          192,
+          117,
+          47,
+          172
+        ],
+        "mode": "full",
+        "verify_run": "45442907114"
       }
     },
     "observedTestIndex": {
@@ -708,6 +1421,101 @@
       "query": "experiment_output",
       "args": {
         "key": "testIndex"
+      },
+      "verified": {
+        "value": [
+          362,
+          249,
+          271,
+          435,
+          400,
+          403,
+          12,
+          399,
+          198,
+          205,
+          78,
+          144,
+          298,
+          171,
+          268,
+          21,
+          194,
+          1,
+          10,
+          208,
+          76,
+          37,
+          388,
+          411,
+          289,
+          100,
+          261,
+          401,
+          319,
+          206,
+          375,
+          283,
+          373,
+          344,
+          287,
+          360,
+          179,
+          238,
+          434,
+          302,
+          158,
+          118,
+          339,
+          397,
+          330,
+          296,
+          164,
+          54,
+          157,
+          71,
+          284,
+          6,
+          343,
+          326,
+          159,
+          15,
+          320,
+          60,
+          282,
+          142,
+          56,
+          124,
+          107,
+          132,
+          382,
+          102,
+          160,
+          141,
+          186,
+          441,
+          90,
+          59,
+          347,
+          233,
+          427,
+          65,
+          438,
+          155,
+          122,
+          276,
+          188,
+          96,
+          170,
+          113,
+          381,
+          213,
+          134,
+          49,
+          52
+        ],
+        "mode": "full",
+        "verify_run": "45442907114"
       }
     },
     "observedFitFunction": {
@@ -717,6 +1525,11 @@
       "query": "experiment_output",
       "args": {
         "key": "fitFunction"
+      },
+      "verified": {
+        "value": "sklearn.linear_model.LinearRegression.fit",
+        "mode": "full",
+        "verify_run": "45442907114"
       }
     },
     "observedFitParameters": {
@@ -726,6 +1539,32 @@
       "query": "experiment_output",
       "args": {
         "key": "fitParameters"
+      },
+      "verified": {
+        "value": [
+          [
+            "copy_X",
+            "True"
+          ],
+          [
+            "fit_intercept",
+            "True"
+          ],
+          [
+            "n_jobs",
+            "None"
+          ],
+          [
+            "positive",
+            "False"
+          ],
+          [
+            "tol",
+            "1e-06"
+          ]
+        ],
+        "mode": "full",
+        "verify_run": "45442907114"
       }
     },
     "observedFitFeatureCount": {
@@ -735,6 +1574,11 @@
       "query": "experiment_output",
       "args": {
         "key": "fitFeatureCount"
+      },
+      "verified": {
+        "value": 10,
+        "mode": "full",
+        "verify_run": "45442907114"
       }
     },
     "observedFitInputSha256": {
@@ -744,6 +1588,11 @@
       "query": "experiment_output",
       "args": {
         "key": "fitInputSha256"
+      },
+      "verified": {
+        "value": "d57c74eecafecaa2ebde2ad29a8448d4d4ecc6a1fb2d29e9db8d2e9dbd5a07bb",
+        "mode": "full",
+        "verify_run": "45442907114"
       }
     },
     "loadedTrainRowsSha256": {
@@ -758,6 +1607,11 @@
           "features",
           "target"
         ]
+      },
+      "verified": {
+        "value": "d57c74eecafecaa2ebde2ad29a8448d4d4ecc6a1fb2d29e9db8d2e9dbd5a07bb",
+        "mode": "full",
+        "verify_run": "45442907114"
       }
     },
     "observedPredictInputSha256": {
@@ -767,6 +1621,11 @@
       "query": "experiment_output",
       "args": {
         "key": "predictInputSha256"
+      },
+      "verified": {
+        "value": "5a4aff1d4cb89adddd50ccac97a5abfcfc7a6e27cc5a856b14bb56c9fb4f95ec",
+        "mode": "full",
+        "verify_run": "45442907114"
       }
     },
     "loadedTestFeaturesSha256": {
@@ -780,6 +1639,11 @@
         "columns": [
           "features"
         ]
+      },
+      "verified": {
+        "value": "5a4aff1d4cb89adddd50ccac97a5abfcfc7a6e27cc5a856b14bb56c9fb4f95ec",
+        "mode": "full",
+        "verify_run": "45442907114"
       }
     },
     "observedMseTargetSha256": {
@@ -789,6 +1653,11 @@
       "query": "experiment_output",
       "args": {
         "key": "mseTargetSha256"
+      },
+      "verified": {
+        "value": "cb71121e14086e4d121991039da2ae8799c362cbe11431dc80027189a9a19e18",
+        "mode": "full",
+        "verify_run": "45442907114"
       }
     },
     "loadedTestTargetSha256": {
@@ -802,6 +1671,11 @@
         "columns": [
           "target"
         ]
+      },
+      "verified": {
+        "value": "cb71121e14086e4d121991039da2ae8799c362cbe11431dc80027189a9a19e18",
+        "mode": "full",
+        "verify_run": "45442907114"
       }
     },
     "observedPredictFunction": {
@@ -811,6 +1685,11 @@
       "query": "experiment_output",
       "args": {
         "key": "predictFunction"
+      },
+      "verified": {
+        "value": "sklearn.linear_model.LinearRegression.predict",
+        "mode": "full",
+        "verify_run": "45442907114"
       }
     },
     "observedMseFunction": {
@@ -820,6 +1699,11 @@
       "query": "experiment_output",
       "args": {
         "key": "mseFunction"
+      },
+      "verified": {
+        "value": "sklearn.metrics.mean_squared_error",
+        "mode": "full",
+        "verify_run": "45442907114"
       }
     },
     "observedCpuArchitecture": {
@@ -829,13 +1713,23 @@
       "query": "experiment_output",
       "args": {
         "key": "cpuArchitecture"
+      },
+      "verified": {
+        "value": "x86_64",
+        "mode": "full",
+        "verify_run": "45442907114"
       }
     },
     "observedOperatingSystem": {
       "type": "String",
       "meaning": "実行が使った OS（GitHub Actions の runner の種類）",
       "verifier": "GitHub",
-      "query": "runner_label"
+      "query": "runner_label",
+      "verified": {
+        "value": "ubuntu-24.04",
+        "mode": "full",
+        "verify_run": "45442907114"
+      }
     },
     "fullRunDeclarationSha256s": {
       "type": "List String",
@@ -848,6 +1742,13 @@
           "result",
           "verified"
         ]
+      },
+      "verified": {
+        "value": [
+          "2856c9a200afd322386817d9cb3378557c2cb4a15e88c25e6b95aca166b34d0e"
+        ],
+        "mode": "full",
+        "verify_run": "45442907114"
       }
     },
     "verifiedDeclarationSha256": {
@@ -861,6 +1762,11 @@
           "result",
           "verified"
         ]
+      },
+      "verified": {
+        "value": "2856c9a200afd322386817d9cb3378557c2cb4a15e88c25e6b95aca166b34d0e",
+        "mode": "full",
+        "verify_run": "45442907114"
       }
     },
     "fullRunTestMses": {
@@ -870,6 +1776,13 @@
       "query": "succeeded_runs_experiment_output",
       "args": {
         "key": "testMse"
+      },
+      "verified": {
+        "value": [
+          "8560648335746739/2500000000000"
+        ],
+        "mode": "full",
+        "verify_run": "45442907114"
       }
     },
     "observedRepositoryCommit": {
@@ -880,6 +1793,11 @@
       "args": {
         "path": "repository_commit.json",
         "key": "commit"
+      },
+      "verified": {
+        "value": "275ea5c7e3c531c57f202ad76609d8234a55fe46",
+        "mode": "full",
+        "verify_run": "45442907114"
       }
     },
     "observedCpuCount": {
@@ -889,6 +1807,11 @@
       "query": "experiment_output",
       "args": {
         "key": "cpuCount"
+      },
+      "verified": {
+        "value": 4,
+        "mode": "full",
+        "verify_run": "45442907114"
       }
     },
     "observedMemoryGibibytes": {
@@ -898,6 +1821,11 @@
       "query": "experiment_output",
       "args": {
         "key": "memoryGibibytes"
+      },
+      "verified": {
+        "value": 16,
+        "mode": "full",
+        "verify_run": "45442907114"
       }
     },
     "observedFetchedUrls": {
@@ -907,6 +1835,13 @@
       "query": "artifact_json_keys",
       "args": {
         "path": "fetched_urls.json"
+      },
+      "verified": {
+        "value": [
+          "https://www4.stat.ncsu.edu/~boos/var.select/diabetes.tab.txt"
+        ],
+        "mode": "full",
+        "verify_run": "45442907114"
       }
     }
   },
