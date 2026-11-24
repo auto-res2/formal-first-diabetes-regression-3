@@ -1,0 +1,43 @@
+{
+  "instruction": "Efron らの糖尿病データセットに線形回帰モデルを当てはめ，テストデータに対する MSE が 3400 を下回るかを調べる",
+  "main_claim": "C01",
+  "unverifiable": {
+    "C10": "文献が示すファイルを特定する検証器が無い",
+    "C11": "コードの振る舞いを判定する検証器が無い",
+    "C12": "ライブラリの中身を判定する検証器が無い"
+  },
+  "derived": {
+    "C16": {"theorem": "C16_of_C10_C14_C15", "from": ["C10", "C14", "C15"]},
+    "C13": {"theorem": "C13_of_C11_C12_C16_to_C36", "from": ["C11", "C12", "C16", "C17", "C18", "C19", "C20", "C21", "C22", "C23", "C24", "C25", "C26", "C27", "C28", "C29", "C30", "C31", "C32", "C33", "C34", "C35", "C36"]},
+    "C00": {"theorem": "C00_of_C13_C37_C38", "from": ["C13", "C37", "C38"]}
+  },
+  "variables": {
+    "outputTestMse": {"type": "ℚ", "meaning": "出力された，テストデータに対する MSE", "verifier": "GitHub", "query": "experiment_output", "args": {"key": "testMse"}},
+    "observedDataSha256": {"type": "String", "meaning": "実行が読んだファイル（artifact にあるデータのファイル）の SHA-256", "verifier": "GitHub", "query": "artifact_file_sha256", "args": {"path": "outputs/data/diabetes.tab.txt"}},
+    "fetchedSha256": {"type": "String", "meaning": "宣言した URL から取得したファイルの SHA-256", "verifier": "GitHub", "query": "artifact_json", "args": {"path": "fetched_urls.json", "key": "https://www4.stat.ncsu.edu/~boos/var.select/diabetes.tab.txt"}},
+    "observedSampleCount": {"type": "ℕ", "meaning": "実行が読んだデータの件数", "verifier": "GitHub", "query": "experiment_output", "args": {"key": "sampleCount"}},
+    "observedFeatureCount": {"type": "ℕ", "meaning": "実行が読んだ説明変数の数", "verifier": "GitHub", "query": "experiment_output", "args": {"key": "featureCount"}},
+    "observedFeatureColumns": {"type": "List String", "meaning": "実行が説明変数として読んだ列", "verifier": "GitHub", "query": "experiment_output", "args": {"key": "featureColumns"}},
+    "observedTargetColumn": {"type": "String", "meaning": "実行が目的変数として読んだ列", "verifier": "GitHub", "query": "experiment_output", "args": {"key": "targetColumn"}},
+    "observedLoadFunction": {"type": "String", "meaning": "実行が読み込みに呼んだ関数", "verifier": "GitHub", "query": "experiment_output", "args": {"key": "loadFunction"}},
+    "observedLoadArguments": {"type": "List (String × String)", "meaning": "実行が読み込みの関数に渡した引数", "verifier": "GitHub", "query": "experiment_output", "args": {"key": "loadArguments"}},
+    "observedSplitFunction": {"type": "String", "meaning": "実行が分割に呼んだ関数", "verifier": "GitHub", "query": "experiment_output", "args": {"key": "splitFunction"}},
+    "observedSplitArguments": {"type": "List (String × String)", "meaning": "実行が分割の関数に渡した引数", "verifier": "GitHub", "query": "experiment_output", "args": {"key": "splitArguments"}},
+    "observedTrainIndex": {"type": "List ℕ", "meaning": "実行が使った訓練データの行の番号", "verifier": "GitHub", "query": "experiment_output", "args": {"key": "trainIndex"}},
+    "observedTestIndex": {"type": "List ℕ", "meaning": "実行が使ったテストデータの行の番号", "verifier": "GitHub", "query": "experiment_output", "args": {"key": "testIndex"}},
+    "observedFitFunction": {"type": "String", "meaning": "実行が当てはめに呼んだ関数", "verifier": "GitHub", "query": "experiment_output", "args": {"key": "fitFunction"}},
+    "observedFitParameters": {"type": "List (String × String)", "meaning": "実行が当てはめたときの LinearRegression のパラメータ", "verifier": "GitHub", "query": "experiment_output", "args": {"key": "fitParameters"}},
+    "observedFitFeatureCount": {"type": "ℕ", "meaning": "実行が当てはめに使った説明変数の数", "verifier": "GitHub", "query": "experiment_output", "args": {"key": "fitFeatureCount"}},
+    "observedPredictFunction": {"type": "String", "meaning": "実行が予測に呼んだ関数", "verifier": "GitHub", "query": "experiment_output", "args": {"key": "predictFunction"}},
+    "observedMseFunction": {"type": "String", "meaning": "実行が MSE の計算に呼んだ関数", "verifier": "GitHub", "query": "experiment_output", "args": {"key": "mseFunction"}},
+    "observedScikitLearnVersion": {"type": "String", "meaning": "実行が使った scikit-learn の版", "verifier": "GitHub", "query": "experiment_output", "args": {"key": "scikitLearnVersion"}},
+    "observedNumpyVersion": {"type": "String", "meaning": "実行が使った NumPy の版", "verifier": "GitHub", "query": "experiment_output", "args": {"key": "numpyVersion"}},
+    "observedScipyVersion": {"type": "String", "meaning": "実行が使った SciPy の版", "verifier": "GitHub", "query": "experiment_output", "args": {"key": "scipyVersion"}},
+    "observedPythonVersion": {"type": "String", "meaning": "実行が使った Python の版", "verifier": "GitHub", "query": "experiment_output", "args": {"key": "pythonVersion"}},
+    "observedCpuArchitecture": {"type": "String", "meaning": "実行が使った CPU のアーキテクチャ", "verifier": "GitHub", "query": "experiment_output", "args": {"key": "cpuArchitecture"}},
+    "observedOperatingSystem": {"type": "String", "meaning": "実行が使った OS（GitHub Actions の runner の種類）", "verifier": "GitHub", "query": "runner_label"},
+    "fullRunDeclarationSha256s": {"type": "List String", "meaning": "run（失敗したものも含む）が実行した commit ごとの，宣言の SHA-256", "verifier": "GitHub", "query": "all_runs_files_sha256", "args": {"paths": ["formal/lean/Spec.lean", "formal/verification.json"]}},
+    "verifiedDeclarationSha256": {"type": "String", "meaning": "判定に使う宣言の SHA-256", "verifier": "GitHub", "query": "local_files_sha256", "args": {"paths": ["formal/lean/Spec.lean", "formal/verification.json"]}},
+    "fullRunTestMses": {"type": "List ℚ", "meaning": "成功した run すべての，出力された MSE", "verifier": "GitHub", "query": "succeeded_runs_experiment_output", "args": {"key": "testMse"}}
+  }
+}
