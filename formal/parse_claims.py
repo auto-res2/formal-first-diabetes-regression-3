@@ -17,7 +17,13 @@ LITERAL = {
     "ℚ": lambda value: f"(({Fraction(value).numerator} : ℚ) / {Fraction(value).denominator})",
     "String × String": lambda value: f"({json.dumps(value[0], ensure_ascii=False)}, {json.dumps(value[1], ensure_ascii=False)})",
 }
-HEADER = ["import Spec", "import Values", "open Spec Values"]
+# proved% は、証明が通った定理だけを参照する。通らなかった定理は Lean が sorry で埋めて残すので、名前があるだけでは使えない
+HEADER = ["import Spec", "import Values", "open Spec Values",
+          "open Lean Elab Term in",
+          "elab \"proved% \" theoremName:ident : term => do",
+          "  let name ← realizeGlobalConstNoOverloadWithInfo theoremName",
+          "  if (← collectAxioms name).contains ``sorryAx then throwError \"{name} は証明されていない\"",
+          "  return mkConst name"]
 
 
 def lean_literal(lean_type: str, value) -> str:
@@ -149,7 +155,7 @@ def candidates(record: dict, available: set[str]) -> list[str]:
             if re.search(r"\bC\d\d\b.*∧", claim["proposition"].split(":=", 1)[1], re.S):
                 parts = [".1" if i == 0 else ".2" * i + (".1" if i < len(premises) - 1 else "") for i in range(len(premises))]
                 derived[name] += [f"theorem {name}_fails : ¬ ({statement}) := fun h => by first "
-                                  + " ".join(f"| exact {premise}_fails h{part}" for premise, part in zip(premises, parts)),
+                                  + " ".join(f"| exact (proved% {premise}_fails) h{part}" for premise, part in zip(premises, parts)),
                                   f"#print axioms {name}_fails"]
         else:
             lines += [f"theorem {name}_holds : {statement} := by decide +kernel",
