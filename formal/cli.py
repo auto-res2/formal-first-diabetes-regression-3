@@ -1,12 +1,14 @@
 """ワークフローが呼ぶ入口。
 
-  python formal/cli.py run full|sanity     宣言された実験を実行し、artifact にするものを run-output/ に集める
-  python formal/cli.py schema              Spec.lean と verification.json から、スキーマ（claims.json）の宣言の部分を作る
-  python formal/cli.py verify full|sanity  変数の値を検証器から取り、Lean で各 claim を判定し、結果をスキーマに書く
+  python formal/cli.py run full|sanity      宣言（claims.json）が指定する commit を取り出し、その中身だけで実験を実行する
+  python formal/cli.py execute full|sanity  実験を実行し、artifact にするものを run-output/ に集める（取り出した commit の中で呼ばれる）
+  python formal/cli.py lean                 claims.json の claims の形式化から、Spec.lean を書き出す
+  python formal/cli.py verify full|sanity   変数の値を検証器から取り、Lean で各 claim を判定し、結果をスキーマに書く
 """
 import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -16,9 +18,22 @@ from pathlib import Path
 FORMAL = Path(__file__).parent
 RUN_OUTPUT = Path("run-output")
 SCHEMA = FORMAL / "claims.json"
+EXECUTION = Path("execution")
 
 
 def run(mode: str) -> None:
+    commit = re.search(r'def repositoryCommit : String := "([0-9a-f]{40})"',
+                       "\n".join(claim["definitions"] for claim in json.loads(SCHEMA.read_text(encoding="utf-8"))["claims"])).group(1)
+    subprocess.run(["git", "worktree", "add", "--detach", str(EXECUTION), commit], check=True)
+    subprocess.run(["python3", "formal/cli.py", "execute", mode], cwd=EXECUTION, check=True)
+    shutil.rmtree(RUN_OUTPUT, ignore_errors=True)
+    shutil.copytree(EXECUTION / RUN_OUTPUT, RUN_OUTPUT)
+    # 取り出した commit の番号は、実験コードとは別に記録する
+    head = subprocess.run(["git", "-C", str(EXECUTION), "rev-parse", "HEAD"], check=True, capture_output=True, text=True).stdout.strip()
+    (RUN_OUTPUT / "repository_commit.json").write_text(json.dumps({"commit": head}) + "\n", encoding="utf-8")
+
+
+def execute(mode: str) -> None:
     declaration = json.loads((FORMAL / "declaration.json").read_text(encoding="utf-8"))
     subprocess.run(declaration["command"] + (declaration["sanity_arguments"] if mode == "sanity" else []), check=True)
     # 実験の出力は outputs/ の下に写す。取得の記録と同じ場所に書かせない
@@ -34,25 +49,24 @@ def run(mode: str) -> None:
 
 
 def write_schema(record: dict) -> None:
-    # 有理数（Fraction）は "分子/分母" の文字列で書く。Values.lean を作るときに有理数に戻る
-    SCHEMA.write_text(json.dumps(record, ensure_ascii=False, indent=2, default=str) + "\n", encoding="utf-8")
-
-
-def schema() -> None:
     import parse_claims
-    write_schema(parse_claims.build_schema())
+    # 有理数（Fraction）は "分子/分母" の文字列で書く。Values.lean を作るときに有理数に戻る
+    SCHEMA.write_text(json.dumps(parse_claims.stored(record), ensure_ascii=False, indent=2, default=str) + "\n", encoding="utf-8")
+
+
+def lean() -> None:
+    import parse_claims
+    parse_claims.write_spec(parse_claims.load_schema())
 
 
 def verify(mode: str) -> None:
-    """検証器の値と判定の結果を、スキーマの verified と result に書き足す。宣言の部分は、作り直したものと同じでなければならない。"""
+    """検証器の値と判定の結果を、スキーマの verified と result に書き足す。"""
     import parse_claims
     repository = os.environ.get("GITHUB_REPOSITORY") or subprocess.run(
         ["gh", "repo", "view", "--json", "nameWithOwner", "--jq", ".nameWithOwner"],
         check=True, capture_output=True, text=True).stdout.strip()
-    record = parse_claims.build_schema()
-    committed = json.loads(SCHEMA.read_text(encoding="utf-8"))
-    if parse_claims.declaration_part(committed) != json.loads(json.dumps(parse_claims.declaration_part(record))):
-        sys.exit("claims.json の宣言の部分が、Spec.lean と verification.json から作ったものと違う（手で書き換えられている）")
+    record = parse_claims.load_schema()
+    parse_claims.write_spec(record)
 
     values, errors = parse_claims.query_values(record, repository, mode)
     for name, value in values.items():
@@ -61,7 +75,7 @@ def verify(mode: str) -> None:
         print(f"値が取れない {name}: {reason}")
     parse_claims.write_values(record)
     lean = FORMAL / "lean"
-    subprocess.run(["lake", "build", "Spec", "Values"], cwd=lean, check=True)
+    subprocess.run(["lake", "build", "Spec", "Proofs", "Values"], cwd=lean, check=True)
 
     available = set(values) | ({"observed"} if "def observed" in (lean / "Values.lean").read_text(encoding="utf-8") else set())
     path = lean / "Candidates.lean"
@@ -83,4 +97,4 @@ def verify(mode: str) -> None:
 
 if __name__ == "__main__":
     command, arguments = sys.argv[1], sys.argv[2:]
-    {"run": run, "schema": schema, "verify": verify}[command](*arguments)
+    {"run": run, "execute": execute, "lean": lean, "verify": verify}[command](*arguments)

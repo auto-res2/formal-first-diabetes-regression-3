@@ -1,4 +1,4 @@
-"""パーサー。Spec.lean（claims の宣言）と verification.json（値の取り方）からスキーマを作り、
+"""パーサー。スキーマ（claims.json）の claims の形式化から Spec.lean を書き出し、
 検証器を呼び、Lean の値と定理のファイルを書き、Lean の出力から判定を読む。"""
 import json
 import re
@@ -9,6 +9,7 @@ from verifiers import QUERIES
 
 FORMAL = Path(__file__).parent
 LEAN = FORMAL / "lean"
+SCHEMA = FORMAL / "claims.json"
 STANDARD_AXIOMS = ["propext", "Classical.choice", "Quot.sound"]
 LITERAL = {
     "String": lambda value: json.dumps(value, ensure_ascii=False),
@@ -18,7 +19,7 @@ LITERAL = {
     "String × String": lambda value: f"({json.dumps(value[0], ensure_ascii=False)}, {json.dumps(value[1], ensure_ascii=False)})",
 }
 # proved% は、証明が通った定理だけを参照する。通らなかった定理は Lean が sorry で埋めて残すので、名前があるだけでは使えない
-HEADER = ["import Spec", "import Values", "open Spec Values",
+HEADER = ["import Spec", "import Proofs", "import Values", "open Spec Values",
           "open Lean Elab Term in",
           "elab \"proved% \" theoremName:ident : term => do",
           "  let name ← realizeGlobalConstNoOverloadWithInfo theoremName",
@@ -39,55 +40,35 @@ def _binders(signature: str) -> list[tuple[str, str]]:
             for name in names.split()]
 
 
-def read_spec() -> list[dict]:
-    """Spec.lean から、claims（abbrev C01 など）を、ID の順に読む。"""
-    text = (LEAN / "Spec.lean").read_text(encoding="utf-8")
-    claims = []
-    for match in re.finditer(r"/-- ((?:(?!-/).)*?) -/\nabbrev (C\d\d)\b(.*?) : Prop :=(.*?)(?=\n\n|\n/--|\ntheorem |\naxiom )", text, re.S):
-        explanation, claim_id, signature, body = match.groups()
-        # 見出しの階層（## 信頼性条件 / ### 宣言どおりに実行されたか / #### データセット）が、ツリーでの位置になる
-        path = {}
-        for level, title in re.findall(r"^/-! (#{2,4}) ([^\n]*?) -/$", text[:match.start()], re.M):
-            path = {depth: name for depth, name in path.items() if depth < len(level)} | {len(level): title}
-        group = " / ".join(path.values())
-        claims.append({
-            "id": claim_id, "group": group, "explanation": explanation,
-            "proposition": f"abbrev {claim_id}{signature} : Prop :={body}",
-            "arguments": [{"name": name, "type": binder_type} for name, binder_type in _binders(signature)],
-            "proved_in_spec": f"theorem {claim_id}_holds" in text,
-            "axiom_in_spec": f"axiom {claim_id}_axiom" in text,
-        })
-    return sorted(claims, key=lambda claim: claim["id"])
+def write_spec(record: dict) -> None:
+    """claims の形式化（claim ごとの定義と命題）から、Spec.lean を書き出す。Lean が使う前に定義を求めるので、lean_order の順に並べる。"""
+    claims = {claim["id"]: claim for claim in record["claims"]}
+    blocks = ["\n".join(filter(None, [claims[i]["definitions"], f"/-- {claims[i]['explanation']} -/", claims[i]["proposition"]]))
+              for i in record["lean_order"]]
+    (LEAN / "Spec.lean").write_text("import Mathlib\n/-! claims.json から生成する。手で編集しない。 -/\n\nnamespace Spec\n\n"
+                                    + "\n\n".join(blocks) + "\n\nend Spec\n", encoding="utf-8")
 
 
-def build_schema() -> dict:
-    """宣言の部分のスキーマ。手で書かず、Spec.lean と verification.json から作る。"""
-    verification = json.loads((FORMAL / "verification.json").read_text(encoding="utf-8"))
-    claims = read_spec()
-    for claim in claims:
-        claim_id = claim["id"]
-        claim["main"] = claim_id == verification["main_claim"]
-        if claim_id in verification["unverifiable"]:
-            claim["kind"], claim["verifier"], claim["unverifiable"] = "axiom", None, verification["unverifiable"][claim_id]
-        elif claim["proved_in_spec"]:
-            claim["kind"], claim["verifier"] = "declaration", "Lean"
-        elif claim_id in verification["derived"]:
-            claim["kind"], claim["verifier"], claim["derived"] = "derived", "Lean", verification["derived"][claim_id]
-        else:
-            claim["kind"], claim["verifier"] = "", "GitHub"
-        unknown = [a["name"] for a in claim["arguments"] if a["name"] not in verification["variables"] and a["name"] != "observed"]
+def load_schema() -> dict:
+    """スキーマの宣言の部分（検証の結果を除いたもの）。命題の引数と、証明の有無を読み足す。"""
+    record = json.loads(SCHEMA.read_text(encoding="utf-8"))
+    proofs = (LEAN / "Proofs.lean").read_text(encoding="utf-8")
+    for claim in record["claims"]:
+        claim.pop("result", None)
+        signature = re.match(rf"abbrev {claim['id']}\b(.*?) : Prop :=", claim["proposition"], re.S).group(1)
+        claim["arguments"] = [{"name": name, "type": binder_type} for name, binder_type in _binders(signature)]
+        claim["axiom_in_proofs"] = f"axiom {claim['id']}_axiom" in proofs
+        unknown = [a["name"] for a in claim["arguments"] if a["name"] not in record["variables"] and a["name"] != "observed"]
         if unknown:
-            raise ValueError(f"{claim_id}: 値の取り方が verification.json に無い: {unknown}")
-    return {"instruction": verification["instruction"], "claims": claims,
-            "variables": verification["variables"], "axioms": STANDARD_AXIOMS}
+            raise ValueError(f"{claim['id']}: 値の取り方が claims.json に無い: {unknown}")
+    for variable in record["variables"].values():
+        variable.pop("verified", None)
+    return record
 
 
-def declaration_part(record: dict) -> dict:
-    """スキーマから、検証の結果（result、verified）を除いたもの。"""
-    return {"instruction": record["instruction"], "axioms": record["axioms"],
-            "claims": [{k: v for k, v in claim.items() if k != "result"} for claim in record["claims"]],
-            "variables": {name: {k: v for k, v in variable.items() if k != "verified"}
-                          for name, variable in record["variables"].items()}}
+def stored(record: dict) -> dict:
+    """スキーマに書くもの。読み足したもの（命題の引数、証明の有無）は書かない。"""
+    return record | {"claims": [{k: v for k, v in claim.items() if k not in ("arguments", "axiom_in_proofs")} for claim in record["claims"]]}
 
 
 def query_values(record: dict, repository: str, mode: str) -> tuple[dict, dict[str, str]]:
@@ -127,7 +108,7 @@ def _proof(claim: dict) -> str:
 def candidates(record: dict, available: set[str]) -> list[str]:
     """各 claim の、真である定理と偽である（否定の）定理。通ったほうが判定になる。値が揃った claim だけを書く。"""
     claims = {claim["id"]: claim for claim in record["claims"]}
-    spec = (LEAN / "Spec.lean").read_text(encoding="utf-8")
+    proofs = (LEAN / "Proofs.lean").read_text(encoding="utf-8")
     axioms, lines, derived = [], [], {}
     for claim in record["claims"]:
         name, statement = claim["id"], _statement(claim)
@@ -137,12 +118,12 @@ def candidates(record: dict, available: set[str]) -> list[str]:
             lines.append(f"#print axioms Spec.{name}_holds")
         elif claim["kind"] == "axiom":
             # 値を含む公理は、検証された値に対してだけ宣言する
-            if not claim["axiom_in_spec"]:
+            if not claim["axiom_in_proofs"]:
                 axioms.append(f"axiom {name}_axiom : {statement}")
             lines.append(f"#print axioms {name}_axiom")
         elif claim["kind"] == "derived":
             theorem, premises = claim["derived"]["theorem"], claim["derived"]["from"]
-            signature = re.search(rf"theorem {theorem}\b(.*?) :\n", spec, re.S).group(1)
+            signature = re.search(rf"theorem {theorem}\b(.*?) :\n", proofs, re.S).group(1)
             holes = " ".join("_" for _ in _binders(signature))
             # by_comparison は，前提のあとに，値の比較（Lean が計算で決める）を 1 つ渡す
             compared = " (by decide +kernel)" if claim["derived"].get("by_comparison") else ""
@@ -152,7 +133,7 @@ def candidates(record: dict, available: set[str]) -> list[str]:
                 derived[name] += [f"theorem {name}_fails : ¬ ({statement}) := {refutation} {holes} " + " ".join(_proof(claims[i]) for i in premises) + compared,
                                   f"#print axioms {name}_fails"]
             # 連言の claim は、偽の成分が 1 つあれば偽。成分の並びは、前提の並びと同じ
-            if re.search(r"\bC\d\d\b.*∧", claim["proposition"].split(":=", 1)[1], re.S):
+            if re.search(r"\b[CR]\d\d\b.*∧", claim["proposition"].split(":=", 1)[1], re.S):
                 parts = [".1" if i == 0 else ".2" * i + (".1" if i < len(premises) - 1 else "") for i in range(len(premises))]
                 derived[name] += [f"theorem {name}_fails : ¬ ({statement}) := fun h => by first "
                                   + " ".join(f"| exact (proved% {premise}_fails) h{part}" for premise, part in zip(premises, parts)),
@@ -161,9 +142,8 @@ def candidates(record: dict, available: set[str]) -> list[str]:
             lines += [f"theorem {name}_holds : {statement} := by decide +kernel",
                       f"theorem {name}_fails : ¬ ({statement}) := by decide +kernel",
                       f"#print axioms {name}_holds", f"#print axioms {name}_fails"]
-    # 導く claims は、verification.json に書いた順（前提が先）に置く
-    order = [name for name in json.loads((FORMAL / "verification.json").read_text(encoding="utf-8"))["derived"] if name in derived]
-    return axioms + lines + [line for name in order for line in derived[name]]
+    # 導く claims は、derived_order の順（前提が先）に置く
+    return axioms + lines + [line for name in record["derived_order"] if name in derived for line in derived[name]]
 
 
 def read_axioms(lean_output: str) -> dict[str, list[str] | None]:

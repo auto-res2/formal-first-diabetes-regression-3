@@ -5,13 +5,13 @@
 """
 import hashlib
 import json
+import math
+import os
 import platform
 import sys
 from pathlib import Path
 
 import numpy as np
-import scipy
-import sklearn
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import train_test_split
@@ -72,8 +72,9 @@ def main() -> None:
         "predictInputSha256": arrays_sha256(predict_features), "mseTargetSha256": arrays_sha256(mse_target),
         "predictFunction": f"{public_name(type(model))}.predict",
         "mseFunction": public_name(mean_squared_error),
-        "scikitLearnVersion": sklearn.__version__, "numpyVersion": np.__version__, "scipyVersion": scipy.__version__,
-        "pythonVersion": platform.python_version(), "cpuArchitecture": platform.machine(),
+        "cpuArchitecture": platform.machine(), "cpuCount": os.cpu_count(),
+        # メモリは実測が公称（16 GiB）をわずかに下回るので、GiB の端数を切り上げる
+        "memoryGibibytes": math.ceil(os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES") / 2**30),
         "testMse": float(mean_squared_error(mse_target, prediction)),
     }
     RESULTS_PATH.parent.mkdir(parents=True, exist_ok=True)

@@ -99,29 +99,32 @@ def runner_label(repository: str, mode: str, variable: str) -> str:
     return labels.pop()
 
 
-def _files_sha256(contents: list[bytes]) -> str:
-    """複数のファイルをまとめた SHA-256（各ファイルの SHA-256 を並べたものの SHA-256）。"""
-    return hashlib.sha256("".join(hashlib.sha256(content).hexdigest() for content in contents).encode()).hexdigest()
+def _json_sha256(content: bytes, drop_keys: list[str]) -> str:
+    """JSON から、指定したキーをどの深さでも除いたものの SHA-256。キーの順と空白によらない。"""
+    def strip(value):
+        if isinstance(value, dict):
+            return {key: strip(item) for key, item in value.items() if key not in drop_keys}
+        return [strip(item) for item in value] if isinstance(value, list) else value
+    return hashlib.sha256(json.dumps(strip(json.loads(content)), sort_keys=True, ensure_ascii=False).encode()).hexdigest()
 
 
 @functools.cache
-def _files_sha256_at(repository: str, commit: str, paths: tuple[str, ...]) -> str:
-    return _files_sha256([subprocess.run(["gh", "api", f"repos/{repository}/contents/{path}?ref={commit}",
-                                         "-H", "Accept: application/vnd.github.raw"], check=True, capture_output=True).stdout
-                          for path in paths])
+def _file_at(repository: str, commit: str, path: str) -> bytes:
+    return subprocess.run(["gh", "api", f"repos/{repository}/contents/{path}?ref={commit}",
+                           "-H", "Accept: application/vnd.github.raw"], check=True, capture_output=True).stdout
 
 
-def all_runs_files_sha256(repository: str, mode: str, variable: str, paths: list[str]) -> list[str]:
-    """その mode の run（失敗したものも含む）が実行した commit ごとの、ファイルをまとめた SHA-256。"""
+def all_runs_json_sha256(repository: str, mode: str, variable: str, path: str, drop_keys: list[str]) -> list[str]:
+    """その mode の run（失敗したものも含む）を起動した commit ごとの、JSON のファイルから指定したキーを除いたものの SHA-256。"""
     _evidence_run(repository, mode)
-    return [_files_sha256_at(repository, run["head_sha"], tuple(paths)) for run in _runs(repository, mode)]
+    return [_json_sha256(_file_at(repository, run["head_sha"], path), drop_keys) for run in _runs(repository, mode)]
 
 
-def local_files_sha256(repository: str, mode: str, variable: str, paths: list[str]) -> str:
-    """判定に使う（いま手元にある）ファイルをまとめた SHA-256。"""
-    return _files_sha256([Path(path).read_bytes() for path in paths])
+def local_json_sha256(repository: str, mode: str, variable: str, path: str, drop_keys: list[str]) -> str:
+    """判定に使う（いま手元にある）JSON のファイルから、指定したキーを除いたものの SHA-256。"""
+    return _json_sha256(Path(path).read_bytes(), drop_keys)
 
 
 QUERIES = {"GitHub": {f.__name__: f for f in (
     experiment_output, succeeded_runs_experiment_output, artifact_file_sha256, artifact_json, artifact_rows_sha256, runner_label,
-    all_runs_files_sha256, local_files_sha256)}}
+    all_runs_json_sha256, local_json_sha256)}}

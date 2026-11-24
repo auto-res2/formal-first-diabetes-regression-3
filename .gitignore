@@ -7,3 +7,8 @@ report/*.out
 run-output/
 formal/lean/.lake/
 formal/lean/Candidates.lean
+execution/
+# claims.json から生成する
+formal/lean/Spec.lean
+formal/lean/Values.lean
+formal/lean/Theorems.lean

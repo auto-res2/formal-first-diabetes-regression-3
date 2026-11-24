@@ -26,7 +26,7 @@ jobs:
       - name: Mathlib のビルド済みのファイルを取得する
         run: lake exe cache get
         working-directory: formal/lean
-      # どの命題を判定するかは formal/lean/Spec.lean、どの値をどこから取るかは formal/verification.json が決める
+      # どの命題を判定するか、どの値をどこから取るかは formal/claims.json が決める
       - run: python3 formal/cli.py verify ${{ inputs.mode }}
         env:
           GH_TOKEN: ${{ github.token }}
@@ -36,6 +36,7 @@ jobs:
           name: verified-values
           path: |
             formal/claims.json
+            formal/lean/Spec.lean
             formal/lean/Values.lean
             formal/lean/Theorems.lean
           if-no-files-found: error

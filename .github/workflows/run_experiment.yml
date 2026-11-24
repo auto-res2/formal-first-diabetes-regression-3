@@ -18,9 +18,12 @@ jobs:
   run:
     runs-on: ubuntu-24.04
     steps:
+      # 宣言が指定する commit を取り出せるように、履歴をすべて取る
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: astral-sh/setup-uv@v6
-      # 何を実行し、何を取得し、何を残すかは formal/declaration.json が決める
+      # どの commit を実行するかは formal/claims.json、その commit で何を実行し、何を取得し、何を残すかは formal/declaration.json が決める
       - run: python3 formal/cli.py run ${{ inputs.mode }}
       - uses: actions/upload-artifact@v4
         with:
