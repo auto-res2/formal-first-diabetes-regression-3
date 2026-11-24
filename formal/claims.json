@@ -3,10 +3,18 @@
   "claims": [
     {
       "id": "C00",
-      "group": "C01 の判定の信頼性",
-      "explanation": "C01 の判定は，信頼性条件を満たす。\n- C01 の真偽は，出力された MSE が 3400 を下回るかどうかと一致する（C14 から導く）\n- HARKing をしていない（C38），チェリーピッキングをしていない（C39）",
-      "proposition": "abbrev C00 (outputTestMse : ℚ) (fullRunDeclarationSha256s : List String) (verifiedDeclarationSha256 : String)\n    (fullRunTestMses : List ℚ) : Prop :=\n  (C01 ↔ outputTestMse < 3400) ∧\n  C38 fullRunDeclarationSha256s verifiedDeclarationSha256 ∧ C39 fullRunTestMses outputTestMse",
+      "group": "C01 と信頼性条件",
+      "explanation": "出力された MSE は 3400 を下回り（C01），信頼性条件を満たす（C11）。",
+      "proposition": "abbrev C00 (fetchedSha256 : String) (observed : Used) (outputTestMse : ℚ) (fullRunDeclarationSha256s : List String)\n    (verifiedDeclarationSha256 : String) (fullRunTestMses : List ℚ) : Prop :=\n  C01 outputTestMse ∧\n  C11 fetchedSha256 observed outputTestMse fullRunDeclarationSha256s verifiedDeclarationSha256 fullRunTestMses",
       "arguments": [
+        {
+          "name": "fetchedSha256",
+          "type": "String"
+        },
+        {
+          "name": "observed",
+          "type": "Used"
+        },
         {
           "name": "outputTestMse",
           "type": "ℚ"
@@ -30,30 +38,34 @@
       "kind": "derived",
       "verifier": "Lean",
       "derived": {
-        "theorem": "C00_of_C14_C38_C39",
+        "theorem": "C00_of_C01_C11",
         "from": [
-          "C14",
-          "C38",
-          "C39"
+          "C01",
+          "C11"
         ]
       }
     },
     {
       "id": "C01",
       "group": "メインの claim",
-      "explanation": "宣言した手順で定まる MSE（C02）は，3400 を下回る。\n- 判定は，出力された MSE を 3400 と比べて行う。その判定を採用してよいことは，C00 が言う",
-      "proposition": "abbrev C01 : Prop := specifiedTestMse < 3400",
-      "arguments": [],
+      "explanation": "出力された MSE は 3400 を下回る。\n- 宣言した手順で MSE が値として定まる（C02）ときに，値の比較で判定する",
+      "proposition": "abbrev C01 (outputTestMse : ℚ) : Prop := outputTestMse < 3400",
+      "arguments": [
+        {
+          "name": "outputTestMse",
+          "type": "ℚ"
+        }
+      ],
       "proved_in_spec": false,
       "axiom_in_spec": false,
       "main": true,
       "kind": "derived",
       "verifier": "Lean",
       "derived": {
-        "theorem": "C01_of_C00",
-        "refutation": "not_C01_of_C00",
+        "theorem": "C01_of_C02",
+        "refutation": "not_C01_of_C02",
         "from": [
-          "C00"
+          "C02"
         ],
         "by_comparison": true
       }
@@ -61,8 +73,8 @@
     {
       "id": "C02",
       "group": "宣言",
-      "explanation": "宣言した手順で，MSE が値として定まる。\n- データセット（C03）を読み込み（C04），分割し（C05），当てはめ（C06），予測し（C07），MSE を計算する（C08）\n- ライブラリの版（C09）と計算環境（C10）は，宣言のとおりとする\n- このとき，MSE が 1 つの有理数として定まる",
-      "proposition": "abbrev C02 : Prop :=\n  C03 → C04 → C05 → C06 → C07 → C08 → C09 → C10 → ∃ mse : ℚ, mse = specifiedTestMse",
+      "explanation": "宣言した手順で，MSE が値として定まる。\n- データセット（C03），読み込み（C04），分割（C05），当てはめ（C06），予測（C07），MSE（C08），ライブラリの版（C09），計算環境（C10）の宣言が，すべて成り立つ\n- その手順で，MSE が 1 つの有理数として定まる",
+      "proposition": "abbrev C02 : Prop :=\n  C03 ∧ C04 ∧ C05 ∧ C06 ∧ C07 ∧ C08 ∧ C09 ∧ C10 ∧ ∃ mse : ℚ, mse = specifiedTestMse",
       "arguments": [],
       "proved_in_spec": true,
       "axiom_in_spec": false,
@@ -168,9 +180,57 @@
     },
     {
       "id": "C11",
+      "group": "信頼性条件",
+      "explanation": "信頼性条件を満たす。\n- 公理（C12，C13，C14）\n- 宣言どおりに実行された（C15）\n- HARKing をしていない（C42）\n- チェリーピッキングをしていない（C43）",
+      "proposition": "abbrev C11 (fetchedSha256 : String) (observed : Used) (outputTestMse : ℚ) (fullRunDeclarationSha256s : List String)\n    (verifiedDeclarationSha256 : String) (fullRunTestMses : List ℚ) : Prop :=\n  C12 fetchedSha256 ∧ C13 observed outputTestMse ∧ C14 ∧ C15 outputTestMse ∧\n  C42 fullRunDeclarationSha256s verifiedDeclarationSha256 ∧ C43 fullRunTestMses outputTestMse",
+      "arguments": [
+        {
+          "name": "fetchedSha256",
+          "type": "String"
+        },
+        {
+          "name": "observed",
+          "type": "Used"
+        },
+        {
+          "name": "outputTestMse",
+          "type": "ℚ"
+        },
+        {
+          "name": "fullRunDeclarationSha256s",
+          "type": "List String"
+        },
+        {
+          "name": "verifiedDeclarationSha256",
+          "type": "String"
+        },
+        {
+          "name": "fullRunTestMses",
+          "type": "List ℚ"
+        }
+      ],
+      "proved_in_spec": false,
+      "axiom_in_spec": false,
+      "main": false,
+      "kind": "derived",
+      "verifier": "Lean",
+      "derived": {
+        "theorem": "C11_of_C12_C13_C14_C15_C42_C43",
+        "from": [
+          "C12",
+          "C13",
+          "C14",
+          "C15",
+          "C42",
+          "C43"
+        ]
+      }
+    },
+    {
+      "id": "C12",
       "group": "信頼性条件 / 公理",
       "explanation": "Efron らが用いた糖尿病データセットは，配布元の URL から取得したファイルである。\n- 値が入った後に，その値に対して公理として宣言する",
-      "proposition": "abbrev C11 (fetchedSha256 : String) : Prop := efronDatasetSha256 = fetchedSha256",
+      "proposition": "abbrev C12 (fetchedSha256 : String) : Prop := efronDatasetSha256 = fetchedSha256",
       "arguments": [
         {
           "name": "fetchedSha256",
@@ -185,19 +245,11 @@
       "unverifiable": "文献が示すファイルを特定する検証器が無い"
     },
     {
-      "id": "C12",
+      "id": "C13",
       "group": "信頼性条件 / 公理",
-      "explanation": "実験コードは，仕様を満たす。\n- 使ったものを，そのまま出力に記録する\n- 計算した MSE を，そのまま出力に記録する\n- 宣言（C04〜C08）のとおりに，データを関数へ渡す\n- この実行に当てはめるには，訓練データの行とテストデータの行が，重ならず，合わせると全件になること（C26）が要る\n- 値が入った後に，その値に対して公理として宣言する（任意の値に対して宣言すると，すべての値が等しいことになってしまう）",
-      "proposition": "abbrev C12 (observedTrainIndex observedTestIndex : List ℕ) (observed : Used) (outputTestMse : ℚ) : Prop :=\n  C26 observedTrainIndex observedTestIndex →\n  observed = actualUsed ∧ outputTestMse = actualTestMse ∧ CodePassesDataAsDeclared",
+      "explanation": "実験コードは，仕様を満たす。\n- 使ったものを，そのまま出力に記録する\n- 計算した MSE を，そのまま出力に記録する\n- 宣言（C04〜C08）のとおりに，データを関数へ渡す\n- 値が入った後に，その値に対して公理として宣言する（任意の値に対して宣言すると，すべての値が等しいことになってしまう）",
+      "proposition": "abbrev C13 (observed : Used) (outputTestMse : ℚ) : Prop :=\n  observed = actualUsed ∧ outputTestMse = actualTestMse ∧ CodePassesDataAsDeclared",
       "arguments": [
-        {
-          "name": "observedTrainIndex",
-          "type": "List ℕ"
-        },
-        {
-          "name": "observedTestIndex",
-          "type": "List ℕ"
-        },
         {
           "name": "observed",
           "type": "Used"
@@ -215,10 +267,10 @@
       "unverifiable": "コードの振る舞いを判定する検証器が無い"
     },
     {
-      "id": "C13",
+      "id": "C14",
       "group": "信頼性条件 / 公理",
       "explanation": "ライブラリは信用できる。\n- 宣言したデータセット，関数，引数，版，計算環境を使い，宣言のとおりにデータを渡せば，ライブラリが計算する MSE は，宣言したとおりに計算した MSE である\n- 関数の中身（何を計算するか）は主張しない",
-      "proposition": "abbrev C13 : Prop := UsedAsDeclared actualUsed → CodePassesDataAsDeclared → actualTestMse = specifiedTestMse",
+      "proposition": "abbrev C14 : Prop := UsedAsDeclared actualUsed → CodePassesDataAsDeclared → actualTestMse = specifiedTestMse",
       "arguments": [],
       "proved_in_spec": false,
       "axiom_in_spec": true,
@@ -228,10 +280,10 @@
       "unverifiable": "ライブラリの中身を判定する検証器が無い"
     },
     {
-      "id": "C14",
+      "id": "C15",
       "group": "信頼性条件 / 宣言どおりに実行されたか",
       "explanation": "出力された MSE は，宣言したとおりに計算した MSE である。",
-      "proposition": "abbrev C14 (outputTestMse : ℚ) : Prop := outputTestMse = specifiedTestMse",
+      "proposition": "abbrev C15 (outputTestMse : ℚ) : Prop := outputTestMse = specifiedTestMse",
       "arguments": [
         {
           "name": "outputTestMse",
@@ -244,11 +296,10 @@
       "kind": "derived",
       "verifier": "Lean",
       "derived": {
-        "theorem": "C14_of_C12_C13_C17_to_C37",
+        "theorem": "C15_of_C13_C14_C18_to_C41",
         "from": [
-          "C12",
           "C13",
-          "C17",
+          "C14",
           "C18",
           "C19",
           "C20",
@@ -268,15 +319,19 @@
           "C34",
           "C35",
           "C36",
-          "C37"
+          "C37",
+          "C38",
+          "C39",
+          "C40",
+          "C41"
         ]
       }
     },
     {
-      "id": "C15",
+      "id": "C16",
       "group": "信頼性条件 / 宣言どおりに実行されたか / データセット",
       "explanation": "実行が読んだファイルの SHA-256 は，宣言した SHA-256 と一致する。",
-      "proposition": "abbrev C15 (observedDataSha256 : String) : Prop := observedDataSha256 = datasetSha256",
+      "proposition": "abbrev C16 (observedDataSha256 : String) : Prop := observedDataSha256 = datasetSha256",
       "arguments": [
         {
           "name": "observedDataSha256",
@@ -290,10 +345,10 @@
       "verifier": "GitHub"
     },
     {
-      "id": "C16",
+      "id": "C17",
       "group": "信頼性条件 / 宣言どおりに実行されたか / データセット",
       "explanation": "宣言した URL から取得したファイルの SHA-256 は，宣言した SHA-256 と一致する。",
-      "proposition": "abbrev C16 (fetchedSha256 : String) : Prop := fetchedSha256 = datasetSha256",
+      "proposition": "abbrev C17 (fetchedSha256 : String) : Prop := fetchedSha256 = datasetSha256",
       "arguments": [
         {
           "name": "fetchedSha256",
@@ -307,10 +362,10 @@
       "verifier": "GitHub"
     },
     {
-      "id": "C17",
+      "id": "C18",
       "group": "信頼性条件 / 宣言どおりに実行されたか / データセット",
       "explanation": "実行が読んだファイルは，Efron らが用いた糖尿病データセットである。",
-      "proposition": "abbrev C17 (observedDataSha256 : String) : Prop := observedDataSha256 = efronDatasetSha256",
+      "proposition": "abbrev C18 (observedDataSha256 : String) : Prop := observedDataSha256 = efronDatasetSha256",
       "arguments": [
         {
           "name": "observedDataSha256",
@@ -323,19 +378,19 @@
       "kind": "derived",
       "verifier": "Lean",
       "derived": {
-        "theorem": "C17_of_C11_C15_C16",
+        "theorem": "C18_of_C12_C16_C17",
         "from": [
-          "C11",
-          "C15",
-          "C16"
+          "C12",
+          "C16",
+          "C17"
         ]
       }
     },
     {
-      "id": "C18",
+      "id": "C19",
       "group": "信頼性条件 / 宣言どおりに実行されたか / データセット",
       "explanation": "実行が読んだデータの件数は，宣言した件数と一致する。",
-      "proposition": "abbrev C18 (observedSampleCount : ℕ) : Prop := observedSampleCount = sampleCount",
+      "proposition": "abbrev C19 (observedSampleCount : ℕ) : Prop := observedSampleCount = sampleCount",
       "arguments": [
         {
           "name": "observedSampleCount",
@@ -349,10 +404,10 @@
       "verifier": "GitHub"
     },
     {
-      "id": "C19",
+      "id": "C20",
       "group": "信頼性条件 / 宣言どおりに実行されたか / データセット",
       "explanation": "実行が読んだ説明変数の数は，宣言した数と一致する。",
-      "proposition": "abbrev C19 (observedFeatureCount : ℕ) : Prop := observedFeatureCount = featureCount",
+      "proposition": "abbrev C20 (observedFeatureCount : ℕ) : Prop := observedFeatureCount = featureCount",
       "arguments": [
         {
           "name": "observedFeatureCount",
@@ -366,10 +421,10 @@
       "verifier": "GitHub"
     },
     {
-      "id": "C20",
+      "id": "C21",
       "group": "信頼性条件 / 宣言どおりに実行されたか / データセット",
       "explanation": "実行が説明変数として読んだ列は，宣言した列と一致する。",
-      "proposition": "abbrev C20 (observedFeatureColumns : List String) : Prop := observedFeatureColumns = featureColumns",
+      "proposition": "abbrev C21 (observedFeatureColumns : List String) : Prop := observedFeatureColumns = featureColumns",
       "arguments": [
         {
           "name": "observedFeatureColumns",
@@ -383,10 +438,10 @@
       "verifier": "GitHub"
     },
     {
-      "id": "C21",
+      "id": "C22",
       "group": "信頼性条件 / 宣言どおりに実行されたか / データセット",
       "explanation": "実行が目的変数として読んだ列は，宣言した列と一致する。",
-      "proposition": "abbrev C21 (observedTargetColumn : String) : Prop := observedTargetColumn = targetColumn",
+      "proposition": "abbrev C22 (observedTargetColumn : String) : Prop := observedTargetColumn = targetColumn",
       "arguments": [
         {
           "name": "observedTargetColumn",
@@ -400,10 +455,10 @@
       "verifier": "GitHub"
     },
     {
-      "id": "C22",
+      "id": "C23",
       "group": "信頼性条件 / 宣言どおりに実行されたか / 読み込み",
       "explanation": "実行が読み込みに呼んだ関数は，宣言した関数と一致する。",
-      "proposition": "abbrev C22 (observedLoadFunction : String) : Prop := observedLoadFunction = loadFunction",
+      "proposition": "abbrev C23 (observedLoadFunction : String) : Prop := observedLoadFunction = loadFunction",
       "arguments": [
         {
           "name": "observedLoadFunction",
@@ -417,10 +472,10 @@
       "verifier": "GitHub"
     },
     {
-      "id": "C23",
+      "id": "C24",
       "group": "信頼性条件 / 宣言どおりに実行されたか / 読み込み",
       "explanation": "実行が読み込みの関数に渡した引数は，宣言した引数と一致する。",
-      "proposition": "abbrev C23 (observedLoadArguments : List (String × String)) : Prop := observedLoadArguments = loadArguments",
+      "proposition": "abbrev C24 (observedLoadArguments : List (String × String)) : Prop := observedLoadArguments = loadArguments",
       "arguments": [
         {
           "name": "observedLoadArguments",
@@ -434,10 +489,10 @@
       "verifier": "GitHub"
     },
     {
-      "id": "C24",
+      "id": "C25",
       "group": "信頼性条件 / 宣言どおりに実行されたか / 分割",
       "explanation": "実行が分割に呼んだ関数は，宣言した関数と一致する。",
-      "proposition": "abbrev C24 (observedSplitFunction : String) : Prop := observedSplitFunction = splitFunction",
+      "proposition": "abbrev C25 (observedSplitFunction : String) : Prop := observedSplitFunction = splitFunction",
       "arguments": [
         {
           "name": "observedSplitFunction",
@@ -451,10 +506,10 @@
       "verifier": "GitHub"
     },
     {
-      "id": "C25",
+      "id": "C26",
       "group": "信頼性条件 / 宣言どおりに実行されたか / 分割",
       "explanation": "実行が分割の関数に渡した引数は，宣言した引数と一致する。",
-      "proposition": "abbrev C25 (observedSplitArguments : List (String × String)) : Prop := observedSplitArguments = splitArguments",
+      "proposition": "abbrev C26 (observedSplitArguments : List (String × String)) : Prop := observedSplitArguments = splitArguments",
       "arguments": [
         {
           "name": "observedSplitArguments",
@@ -468,10 +523,10 @@
       "verifier": "GitHub"
     },
     {
-      "id": "C26",
+      "id": "C27",
       "group": "信頼性条件 / 宣言どおりに実行されたか / 分割",
       "explanation": "実行が使った訓練データの行とテストデータの行は，重ならず，合わせると宣言した全件になる。",
-      "proposition": "abbrev C26 (observedTrainIndex observedTestIndex : List ℕ) : Prop :=\n  Disjoint observedTrainIndex.toFinset observedTestIndex.toFinset ∧\n  observedTrainIndex.toFinset ∪ observedTestIndex.toFinset = Finset.range sampleCount",
+      "proposition": "abbrev C27 (observedTrainIndex observedTestIndex : List ℕ) : Prop :=\n  Disjoint observedTrainIndex.toFinset observedTestIndex.toFinset ∧\n  observedTrainIndex.toFinset ∪ observedTestIndex.toFinset = Finset.range sampleCount",
       "arguments": [
         {
           "name": "observedTrainIndex",
@@ -489,10 +544,10 @@
       "verifier": "GitHub"
     },
     {
-      "id": "C27",
+      "id": "C28",
       "group": "信頼性条件 / 宣言どおりに実行されたか / 当てはめ",
       "explanation": "実行が当てはめに呼んだ関数は，宣言した関数と一致する。",
-      "proposition": "abbrev C27 (observedFitFunction : String) : Prop := observedFitFunction = fitFunction",
+      "proposition": "abbrev C28 (observedFitFunction : String) : Prop := observedFitFunction = fitFunction",
       "arguments": [
         {
           "name": "observedFitFunction",
@@ -506,10 +561,10 @@
       "verifier": "GitHub"
     },
     {
-      "id": "C28",
+      "id": "C29",
       "group": "信頼性条件 / 宣言どおりに実行されたか / 当てはめ",
       "explanation": "実行が当てはめたときの LinearRegression のパラメータは，宣言したパラメータと一致する。",
-      "proposition": "abbrev C28 (observedFitParameters : List (String × String)) : Prop := observedFitParameters = fitParameters",
+      "proposition": "abbrev C29 (observedFitParameters : List (String × String)) : Prop := observedFitParameters = fitParameters",
       "arguments": [
         {
           "name": "observedFitParameters",
@@ -523,10 +578,10 @@
       "verifier": "GitHub"
     },
     {
-      "id": "C29",
+      "id": "C30",
       "group": "信頼性条件 / 宣言どおりに実行されたか / 当てはめ",
       "explanation": "実行が当てはめに使った説明変数の数は，宣言した説明変数の数と一致する。",
-      "proposition": "abbrev C29 (observedFitFeatureCount : ℕ) : Prop := observedFitFeatureCount = featureCount",
+      "proposition": "abbrev C30 (observedFitFeatureCount : ℕ) : Prop := observedFitFeatureCount = featureCount",
       "arguments": [
         {
           "name": "observedFitFeatureCount",
@@ -540,10 +595,31 @@
       "verifier": "GitHub"
     },
     {
-      "id": "C30",
+      "id": "C31",
+      "group": "信頼性条件 / 宣言どおりに実行されたか / 当てはめ",
+      "explanation": "実行が当てはめに渡した説明変数と目的変数は，読み込んだファイルの訓練データの行そのものである（加工していない）。",
+      "proposition": "abbrev C31 (observedFitInputSha256 loadedTrainRowsSha256 : String) : Prop :=\n  observedFitInputSha256 = loadedTrainRowsSha256",
+      "arguments": [
+        {
+          "name": "observedFitInputSha256",
+          "type": "String"
+        },
+        {
+          "name": "loadedTrainRowsSha256",
+          "type": "String"
+        }
+      ],
+      "proved_in_spec": false,
+      "axiom_in_spec": false,
+      "main": false,
+      "kind": "",
+      "verifier": "GitHub"
+    },
+    {
+      "id": "C32",
       "group": "信頼性条件 / 宣言どおりに実行されたか / 予測",
       "explanation": "実行が予測に呼んだ関数は，宣言した関数と一致する。",
-      "proposition": "abbrev C30 (observedPredictFunction : String) : Prop := observedPredictFunction = predictFunction",
+      "proposition": "abbrev C32 (observedPredictFunction : String) : Prop := observedPredictFunction = predictFunction",
       "arguments": [
         {
           "name": "observedPredictFunction",
@@ -557,10 +633,31 @@
       "verifier": "GitHub"
     },
     {
-      "id": "C31",
+      "id": "C33",
+      "group": "信頼性条件 / 宣言どおりに実行されたか / 予測",
+      "explanation": "実行が予測に渡した説明変数は，読み込んだファイルのテストデータの行そのものである（加工していない）。",
+      "proposition": "abbrev C33 (observedPredictInputSha256 loadedTestFeaturesSha256 : String) : Prop :=\n  observedPredictInputSha256 = loadedTestFeaturesSha256",
+      "arguments": [
+        {
+          "name": "observedPredictInputSha256",
+          "type": "String"
+        },
+        {
+          "name": "loadedTestFeaturesSha256",
+          "type": "String"
+        }
+      ],
+      "proved_in_spec": false,
+      "axiom_in_spec": false,
+      "main": false,
+      "kind": "",
+      "verifier": "GitHub"
+    },
+    {
+      "id": "C34",
       "group": "信頼性条件 / 宣言どおりに実行されたか / MSE",
       "explanation": "実行が MSE の計算に呼んだ関数は，宣言した関数と一致する。",
-      "proposition": "abbrev C31 (observedMseFunction : String) : Prop := observedMseFunction = mseFunction",
+      "proposition": "abbrev C34 (observedMseFunction : String) : Prop := observedMseFunction = mseFunction",
       "arguments": [
         {
           "name": "observedMseFunction",
@@ -574,10 +671,31 @@
       "verifier": "GitHub"
     },
     {
-      "id": "C32",
+      "id": "C35",
+      "group": "信頼性条件 / 宣言どおりに実行されたか / MSE",
+      "explanation": "実行が MSE の計算に渡した目的変数は，読み込んだファイルのテストデータの行そのものである（加工していない）。",
+      "proposition": "abbrev C35 (observedMseTargetSha256 loadedTestTargetSha256 : String) : Prop :=\n  observedMseTargetSha256 = loadedTestTargetSha256",
+      "arguments": [
+        {
+          "name": "observedMseTargetSha256",
+          "type": "String"
+        },
+        {
+          "name": "loadedTestTargetSha256",
+          "type": "String"
+        }
+      ],
+      "proved_in_spec": false,
+      "axiom_in_spec": false,
+      "main": false,
+      "kind": "",
+      "verifier": "GitHub"
+    },
+    {
+      "id": "C36",
       "group": "信頼性条件 / 宣言どおりに実行されたか / ライブラリの版",
       "explanation": "実行が使った scikit-learn の版は，宣言した版と一致する。",
-      "proposition": "abbrev C32 (observedScikitLearnVersion : String) : Prop := observedScikitLearnVersion = scikitLearnVersion",
+      "proposition": "abbrev C36 (observedScikitLearnVersion : String) : Prop := observedScikitLearnVersion = scikitLearnVersion",
       "arguments": [
         {
           "name": "observedScikitLearnVersion",
@@ -591,10 +709,10 @@
       "verifier": "GitHub"
     },
     {
-      "id": "C33",
+      "id": "C37",
       "group": "信頼性条件 / 宣言どおりに実行されたか / ライブラリの版",
       "explanation": "実行が使った NumPy の版は，宣言した版と一致する。",
-      "proposition": "abbrev C33 (observedNumpyVersion : String) : Prop := observedNumpyVersion = numpyVersion",
+      "proposition": "abbrev C37 (observedNumpyVersion : String) : Prop := observedNumpyVersion = numpyVersion",
       "arguments": [
         {
           "name": "observedNumpyVersion",
@@ -608,10 +726,10 @@
       "verifier": "GitHub"
     },
     {
-      "id": "C34",
+      "id": "C38",
       "group": "信頼性条件 / 宣言どおりに実行されたか / ライブラリの版",
       "explanation": "実行が使った SciPy の版は，宣言した版と一致する。",
-      "proposition": "abbrev C34 (observedScipyVersion : String) : Prop := observedScipyVersion = scipyVersion",
+      "proposition": "abbrev C38 (observedScipyVersion : String) : Prop := observedScipyVersion = scipyVersion",
       "arguments": [
         {
           "name": "observedScipyVersion",
@@ -625,10 +743,10 @@
       "verifier": "GitHub"
     },
     {
-      "id": "C35",
+      "id": "C39",
       "group": "信頼性条件 / 宣言どおりに実行されたか / 計算環境",
       "explanation": "実行が使った Python の版は，宣言した版と一致する。",
-      "proposition": "abbrev C35 (observedPythonVersion : String) : Prop := observedPythonVersion = pythonVersion",
+      "proposition": "abbrev C39 (observedPythonVersion : String) : Prop := observedPythonVersion = pythonVersion",
       "arguments": [
         {
           "name": "observedPythonVersion",
@@ -642,10 +760,10 @@
       "verifier": "GitHub"
     },
     {
-      "id": "C36",
+      "id": "C40",
       "group": "信頼性条件 / 宣言どおりに実行されたか / 計算環境",
       "explanation": "実行が使った OS（GitHub Actions の runner の種類）は，宣言した OS と一致する。",
-      "proposition": "abbrev C36 (observedOperatingSystem : String) : Prop := observedOperatingSystem = operatingSystem",
+      "proposition": "abbrev C40 (observedOperatingSystem : String) : Prop := observedOperatingSystem = operatingSystem",
       "arguments": [
         {
           "name": "observedOperatingSystem",
@@ -659,10 +777,10 @@
       "verifier": "GitHub"
     },
     {
-      "id": "C37",
+      "id": "C41",
       "group": "信頼性条件 / 宣言どおりに実行されたか / 計算環境",
       "explanation": "実行が使った CPU のアーキテクチャは，宣言したアーキテクチャと一致する。",
-      "proposition": "abbrev C37 (observedCpuArchitecture : String) : Prop := observedCpuArchitecture = cpuArchitecture",
+      "proposition": "abbrev C41 (observedCpuArchitecture : String) : Prop := observedCpuArchitecture = cpuArchitecture",
       "arguments": [
         {
           "name": "observedCpuArchitecture",
@@ -676,10 +794,10 @@
       "verifier": "GitHub"
     },
     {
-      "id": "C38",
+      "id": "C42",
       "group": "信頼性条件 / HARKing をしていない",
       "explanation": "本番の run は，失敗したものも含めてすべて，判定に使う宣言と同じ宣言の commit で実行された。\n- 宣言は，このファイル（Spec.lean）と，値の取り方（verification.json）\n- 最初の本番の run より前に宣言があり，その後に宣言を書き換えていないことを示す",
-      "proposition": "abbrev C38 (fullRunDeclarationSha256s : List String) (verifiedDeclarationSha256 : String) : Prop :=\n  ∀ sha256 ∈ fullRunDeclarationSha256s, sha256 = verifiedDeclarationSha256",
+      "proposition": "abbrev C42 (fullRunDeclarationSha256s : List String) (verifiedDeclarationSha256 : String) : Prop :=\n  ∀ sha256 ∈ fullRunDeclarationSha256s, sha256 = verifiedDeclarationSha256",
       "arguments": [
         {
           "name": "fullRunDeclarationSha256s",
@@ -697,10 +815,10 @@
       "verifier": "GitHub"
     },
     {
-      "id": "C39",
+      "id": "C43",
       "group": "信頼性条件 / チェリーピッキングをしていない",
       "explanation": "成功した本番の run が出力した MSE は，すべて，判定に使う MSE と一致する。",
-      "proposition": "abbrev C39 (fullRunTestMses : List ℚ) (outputTestMse : ℚ) : Prop := ∀ mse ∈ fullRunTestMses, mse = outputTestMse",
+      "proposition": "abbrev C43 (fullRunTestMses : List ℚ) (outputTestMse : ℚ) : Prop := ∀ mse ∈ fullRunTestMses, mse = outputTestMse",
       "arguments": [
         {
           "name": "fullRunTestMses",
@@ -862,6 +980,73 @@
       "query": "experiment_output",
       "args": {
         "key": "fitFeatureCount"
+      }
+    },
+    "observedFitInputSha256": {
+      "type": "String",
+      "meaning": "実行が当てはめに渡した説明変数と目的変数の SHA-256",
+      "verifier": "GitHub",
+      "query": "experiment_output",
+      "args": {
+        "key": "fitInputSha256"
+      }
+    },
+    "loadedTrainRowsSha256": {
+      "type": "String",
+      "meaning": "実行が読んだファイルの，訓練データの行の説明変数と目的変数の SHA-256",
+      "verifier": "GitHub",
+      "query": "artifact_rows_sha256",
+      "args": {
+        "path": "outputs/data/diabetes.tab.txt",
+        "index": "trainIndex",
+        "columns": [
+          "features",
+          "target"
+        ]
+      }
+    },
+    "observedPredictInputSha256": {
+      "type": "String",
+      "meaning": "実行が予測に渡した説明変数の SHA-256",
+      "verifier": "GitHub",
+      "query": "experiment_output",
+      "args": {
+        "key": "predictInputSha256"
+      }
+    },
+    "loadedTestFeaturesSha256": {
+      "type": "String",
+      "meaning": "実行が読んだファイルの，テストデータの行の説明変数の SHA-256",
+      "verifier": "GitHub",
+      "query": "artifact_rows_sha256",
+      "args": {
+        "path": "outputs/data/diabetes.tab.txt",
+        "index": "testIndex",
+        "columns": [
+          "features"
+        ]
+      }
+    },
+    "observedMseTargetSha256": {
+      "type": "String",
+      "meaning": "実行が MSE の計算に渡した目的変数の SHA-256",
+      "verifier": "GitHub",
+      "query": "experiment_output",
+      "args": {
+        "key": "mseTargetSha256"
+      }
+    },
+    "loadedTestTargetSha256": {
+      "type": "String",
+      "meaning": "実行が読んだファイルの，テストデータの行の目的変数の SHA-256",
+      "verifier": "GitHub",
+      "query": "artifact_rows_sha256",
+      "args": {
+        "path": "outputs/data/diabetes.tab.txt",
+        "index": "testIndex",
+        "columns": [
+          "target"
+        ]
       }
     },
     "observedPredictFunction": {

@@ -80,6 +80,15 @@ def artifact_json(repository: str, mode: str, variable: str, path: str, key: str
     return json.loads(_artifact(repository, _evidence_run(repository, mode)["id"]).read(path), parse_float=Fraction)[key]
 
 
+def artifact_rows_sha256(repository: str, mode: str, variable: str, path: str, index: str, columns: list[str]) -> str:
+    """artifact にあるデータのファイルから、実験の出力が記録した番号の行を取り出したものの SHA-256。実験コードと同じ表記（JSON）でまとめる。"""
+    run = _evidence_run(repository, mode)["id"]
+    table = [[float(value) for value in line.split()] for line in _artifact(repository, run).read(path).decode().splitlines()[1:]]
+    rows = [table[i] for i in json.loads(_artifact(repository, run).read(OUTPUT_PATH))[index]]
+    parts = {"features": [row[:-1] for row in rows], "target": [row[-1] for row in rows]}
+    return hashlib.sha256(json.dumps([parts[column] for column in columns]).encode()).hexdigest()
+
+
 def runner_label(repository: str, mode: str, variable: str) -> str:
     """run の job が走った runner の種類。"""
     run = _evidence_run(repository, mode)["id"]
@@ -114,5 +123,5 @@ def local_files_sha256(repository: str, mode: str, variable: str, paths: list[st
 
 
 QUERIES = {"GitHub": {f.__name__: f for f in (
-    experiment_output, succeeded_runs_experiment_output, artifact_file_sha256, artifact_json, runner_label,
+    experiment_output, succeeded_runs_experiment_output, artifact_file_sha256, artifact_json, artifact_rows_sha256, runner_label,
     all_runs_files_sha256, local_files_sha256)}}

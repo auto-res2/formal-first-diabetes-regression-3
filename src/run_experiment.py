@@ -3,6 +3,7 @@
 出力するのは、宣言どおりに実行されたかの照合に使う値と、テストデータに対する MSE だけ。
 --sanity を付けると、同じ形の合成データで実行する。仕組みの試運転用で、結果は証拠にしない。
 """
+import hashlib
 import json
 import platform
 import sys
@@ -42,6 +43,11 @@ def recorded(arguments: dict) -> list[list[str]]:
     return [[name, repr(value)] for name, value in arguments.items()]
 
 
+def arrays_sha256(*arrays) -> str:
+    """関数に渡した配列をまとめた SHA-256。検証器が、読み込んだファイルの行から同じ表記（JSON）で計算して照合する。"""
+    return hashlib.sha256(json.dumps([array.tolist() for array in arrays]).encode()).hexdigest()
+
+
 def main() -> None:
     data_path = write_sanity_data() if "--sanity" in sys.argv else download_data()
     columns = data_path.read_text().splitlines()[0].split("\t")
@@ -49,8 +55,10 @@ def main() -> None:
     features, target = table[:, :-1], table[:, -1]
     train_index, test_index = train_test_split(np.arange(len(target)), **SPLIT_ARGUMENTS)
     model = LinearRegression()
-    LinearRegression.fit(model, features[train_index], target[train_index])
-    prediction = LinearRegression.predict(model, features[test_index])
+    fit_features, fit_target = features[train_index], target[train_index]
+    predict_features, mse_target = features[test_index], target[test_index]
+    LinearRegression.fit(model, fit_features, fit_target)
+    prediction = LinearRegression.predict(model, predict_features)
     result = {
         "sampleCount": int(len(target)), "featureCount": int(features.shape[1]),
         "featureColumns": columns[:-1], "targetColumn": columns[-1],
@@ -60,11 +68,13 @@ def main() -> None:
         # predict は親クラスで定義されているので、関数の名前ではなく、モデルのクラスの名前に付けて記録する
         "fitFunction": f"{public_name(type(model))}.fit", "fitParameters": recorded(model.get_params()),
         "fitFeatureCount": int(model.n_features_in_),
+        "fitInputSha256": arrays_sha256(fit_features, fit_target),
+        "predictInputSha256": arrays_sha256(predict_features), "mseTargetSha256": arrays_sha256(mse_target),
         "predictFunction": f"{public_name(type(model))}.predict",
         "mseFunction": public_name(mean_squared_error),
         "scikitLearnVersion": sklearn.__version__, "numpyVersion": np.__version__, "scipyVersion": scipy.__version__,
         "pythonVersion": platform.python_version(), "cpuArchitecture": platform.machine(),
-        "testMse": float(mean_squared_error(target[test_index], prediction)),
+        "testMse": float(mean_squared_error(mse_target, prediction)),
     }
     RESULTS_PATH.parent.mkdir(parents=True, exist_ok=True)
     RESULTS_PATH.write_text(json.dumps(result, indent=2) + "\n")

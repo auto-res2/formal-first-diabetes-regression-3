@@ -2,15 +2,16 @@
   "instruction": "Efron らの糖尿病データセットに線形回帰モデルを当てはめ，テストデータに対する MSE が 3400 を下回るかを調べる",
   "main_claim": "C01",
   "unverifiable": {
-    "C11": "文献が示すファイルを特定する検証器が無い",
-    "C12": "コードの振る舞いを判定する検証器が無い",
-    "C13": "ライブラリの中身を判定する検証器が無い"
+    "C12": "文献が示すファイルを特定する検証器が無い",
+    "C13": "コードの振る舞いを判定する検証器が無い",
+    "C14": "ライブラリの中身を判定する検証器が無い"
   },
   "derived": {
-    "C17": {"theorem": "C17_of_C11_C15_C16", "from": ["C11", "C15", "C16"]},
-    "C14": {"theorem": "C14_of_C12_C13_C17_to_C37", "from": ["C12", "C13", "C17", "C18", "C19", "C20", "C21", "C22", "C23", "C24", "C25", "C26", "C27", "C28", "C29", "C30", "C31", "C32", "C33", "C34", "C35", "C36", "C37"]},
-    "C00": {"theorem": "C00_of_C14_C38_C39", "from": ["C14", "C38", "C39"]},
-    "C01": {"theorem": "C01_of_C00", "refutation": "not_C01_of_C00", "from": ["C00"], "by_comparison": true}
+    "C18": {"theorem": "C18_of_C12_C16_C17", "from": ["C12", "C16", "C17"]},
+    "C15": {"theorem": "C15_of_C13_C14_C18_to_C41", "from": ["C13", "C14", "C18", "C19", "C20", "C21", "C22", "C23", "C24", "C25", "C26", "C27", "C28", "C29", "C30", "C31", "C32", "C33", "C34", "C35", "C36", "C37", "C38", "C39", "C40", "C41"]},
+    "C01": {"theorem": "C01_of_C02", "refutation": "not_C01_of_C02", "from": ["C02"], "by_comparison": true},
+    "C11": {"theorem": "C11_of_C12_C13_C14_C15_C42_C43", "from": ["C12", "C13", "C14", "C15", "C42", "C43"]},
+    "C00": {"theorem": "C00_of_C01_C11", "from": ["C01", "C11"]}
   },
   "variables": {
     "outputTestMse": {"type": "ℚ", "meaning": "出力された，テストデータに対する MSE", "verifier": "GitHub", "query": "experiment_output", "args": {"key": "testMse"}},
@@ -29,6 +30,12 @@
     "observedFitFunction": {"type": "String", "meaning": "実行が当てはめに呼んだ関数", "verifier": "GitHub", "query": "experiment_output", "args": {"key": "fitFunction"}},
     "observedFitParameters": {"type": "List (String × String)", "meaning": "実行が当てはめたときの LinearRegression のパラメータ", "verifier": "GitHub", "query": "experiment_output", "args": {"key": "fitParameters"}},
     "observedFitFeatureCount": {"type": "ℕ", "meaning": "実行が当てはめに使った説明変数の数", "verifier": "GitHub", "query": "experiment_output", "args": {"key": "fitFeatureCount"}},
+    "observedFitInputSha256": {"type": "String", "meaning": "実行が当てはめに渡した説明変数と目的変数の SHA-256", "verifier": "GitHub", "query": "experiment_output", "args": {"key": "fitInputSha256"}},
+    "loadedTrainRowsSha256": {"type": "String", "meaning": "実行が読んだファイルの，訓練データの行の説明変数と目的変数の SHA-256", "verifier": "GitHub", "query": "artifact_rows_sha256", "args": {"path": "outputs/data/diabetes.tab.txt", "index": "trainIndex", "columns": ["features", "target"]}},
+    "observedPredictInputSha256": {"type": "String", "meaning": "実行が予測に渡した説明変数の SHA-256", "verifier": "GitHub", "query": "experiment_output", "args": {"key": "predictInputSha256"}},
+    "loadedTestFeaturesSha256": {"type": "String", "meaning": "実行が読んだファイルの，テストデータの行の説明変数の SHA-256", "verifier": "GitHub", "query": "artifact_rows_sha256", "args": {"path": "outputs/data/diabetes.tab.txt", "index": "testIndex", "columns": ["features"]}},
+    "observedMseTargetSha256": {"type": "String", "meaning": "実行が MSE の計算に渡した目的変数の SHA-256", "verifier": "GitHub", "query": "experiment_output", "args": {"key": "mseTargetSha256"}},
+    "loadedTestTargetSha256": {"type": "String", "meaning": "実行が読んだファイルの，テストデータの行の目的変数の SHA-256", "verifier": "GitHub", "query": "artifact_rows_sha256", "args": {"path": "outputs/data/diabetes.tab.txt", "index": "testIndex", "columns": ["target"]}},
     "observedPredictFunction": {"type": "String", "meaning": "実行が予測に呼んだ関数", "verifier": "GitHub", "query": "experiment_output", "args": {"key": "predictFunction"}},
     "observedMseFunction": {"type": "String", "meaning": "実行が MSE の計算に呼んだ関数", "verifier": "GitHub", "query": "experiment_output", "args": {"key": "mseFunction"}},
     "observedScikitLearnVersion": {"type": "String", "meaning": "実行が使った scikit-learn の版", "verifier": "GitHub", "query": "experiment_output", "args": {"key": "scikitLearnVersion"}},
