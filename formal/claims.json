@@ -4,8 +4,8 @@
     {
       "id": "C00",
       "group": "C01 の判定の信頼性",
-      "explanation": "C01 の判定は，信頼性条件を満たす。\n- 出力された MSE での判定（C01）は，宣言したとおりに計算した MSE が 3400 を下回るかの判定と一致する（C14 から導く）\n- HARKing をしていない（C38），チェリーピッキングをしていない（C39）",
-      "proposition": "abbrev C00 (outputTestMse : ℚ) (fullRunDeclarationSha256s : List String) (verifiedDeclarationSha256 : String)\n    (fullRunTestMses : List ℚ) : Prop :=\n  (C01 outputTestMse ↔ specifiedTestMse < 3400) ∧\n  C38 fullRunDeclarationSha256s verifiedDeclarationSha256 ∧ C39 fullRunTestMses outputTestMse",
+      "explanation": "C01 の判定は，信頼性条件を満たす。\n- C01 の真偽は，出力された MSE が 3400 を下回るかどうかと一致する（C14 から導く）\n- HARKing をしていない（C38），チェリーピッキングをしていない（C39）",
+      "proposition": "abbrev C00 (outputTestMse : ℚ) (fullRunDeclarationSha256s : List String) (verifiedDeclarationSha256 : String)\n    (fullRunTestMses : List ℚ) : Prop :=\n  (C01 ↔ outputTestMse < 3400) ∧\n  C38 fullRunDeclarationSha256s verifiedDeclarationSha256 ∧ C39 fullRunTestMses outputTestMse",
       "arguments": [
         {
           "name": "outputTestMse",
@@ -41,25 +41,28 @@
     {
       "id": "C01",
       "group": "メインの claim",
-      "explanation": "出力された MSE は 3400 を下回る。",
-      "proposition": "abbrev C01 (outputTestMse : ℚ) : Prop := outputTestMse < 3400",
-      "arguments": [
-        {
-          "name": "outputTestMse",
-          "type": "ℚ"
-        }
-      ],
+      "explanation": "宣言した手順で定まる MSE（C02）は，3400 を下回る。\n- 判定は，出力された MSE を 3400 と比べて行う。その判定を採用してよいことは，C00 が言う",
+      "proposition": "abbrev C01 : Prop := specifiedTestMse < 3400",
+      "arguments": [],
       "proved_in_spec": false,
       "axiom_in_spec": false,
       "main": true,
-      "kind": "",
-      "verifier": "GitHub"
+      "kind": "derived",
+      "verifier": "Lean",
+      "derived": {
+        "theorem": "C01_of_C00",
+        "refutation": "not_C01_of_C00",
+        "from": [
+          "C00"
+        ],
+        "by_comparison": true
+      }
     },
     {
       "id": "C02",
-      "group": "MSE を得る手順",
-      "explanation": "宣言した手順で，MSE が値として定まる。\n- 宣言したデータセットを読み込み，分割し，当てはめ，予測し，MSE を計算すると，MSE が 1 つの有理数として定まる",
-      "proposition": "abbrev C02 : Prop := ∃ mse : ℚ, mse = specifiedTestMse",
+      "group": "宣言",
+      "explanation": "宣言した手順で，MSE が値として定まる。\n- データセット（C03）を読み込み（C04），分割し（C05），当てはめ（C06），予測し（C07），MSE を計算する（C08）\n- ライブラリの版（C09）と計算環境（C10）は，宣言のとおりとする\n- このとき，MSE が 1 つの有理数として定まる",
+      "proposition": "abbrev C02 : Prop :=\n  C03 → C04 → C05 → C06 → C07 → C08 → C09 → C10 → ∃ mse : ℚ, mse = specifiedTestMse",
       "arguments": [],
       "proved_in_spec": true,
       "axiom_in_spec": false,

@@ -138,8 +138,13 @@ def candidates(record: dict, available: set[str]) -> list[str]:
             theorem, premises = claim["derived"]["theorem"], claim["derived"]["from"]
             signature = re.search(rf"theorem {theorem}\b(.*?) :\n", spec, re.S).group(1)
             holes = " ".join("_" for _ in _binders(signature))
-            derived[name] = [f"theorem {name}_holds : {statement} := {theorem} {holes} " + " ".join(_proof(claims[i]) for i in premises),
+            # by_comparison は，前提のあとに，値の比較（Lean が計算で決める）を 1 つ渡す
+            compared = " (by decide +kernel)" if claim["derived"].get("by_comparison") else ""
+            derived[name] = [f"theorem {name}_holds : {statement} := {theorem} {holes} " + " ".join(_proof(claims[i]) for i in premises) + compared,
                              f"#print axioms {name}_holds"]
+            if refutation := claim["derived"].get("refutation"):
+                derived[name] += [f"theorem {name}_fails : ¬ ({statement}) := {refutation} {holes} " + " ".join(_proof(claims[i]) for i in premises) + compared,
+                                  f"#print axioms {name}_fails"]
             # 連言の claim は、偽の成分が 1 つあれば偽。成分の並びは、前提の並びと同じ
             if re.search(r"\bC\d\d\b.*∧", claim["proposition"].split(":=", 1)[1], re.S):
                 parts = [".1" if i == 0 else ".2" * i + (".1" if i < len(premises) - 1 else "") for i in range(len(premises))]

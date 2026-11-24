@@ -3,19 +3,14 @@ import Mathlib
 研究の指示: Efron らの糖尿病データセットに線形回帰モデルを当てはめ，テストデータに対する MSE が 3400 を下回るかを調べる。
 
 実験の前に宣言するもの。claim 1 つが命題 1 つで，命題の名前が claim の ID。
-ID はツリーの順（C00 → メインの claim → MSE を得る手順 → 宣言 → 信頼性条件）に振る。
-ファイルの中の並びは，Lean が使う前に宣言を求めるので，この順ではない（C02 が宣言の後に，公理が C14〜C37 の後に，C00 が最後に来る）。
+ID はツリーの順（C00 → メインの claim → 宣言 → 信頼性条件）に振る。
+ファイルの中の並びは，Lean が使う前に宣言を求めるので，この順ではない（C02 と C01 が C03〜C10 の後に，公理が C14〜C37 の後に，C00 が最後に来る）。
 検証器が取る値は，命題の引数で受ける。
 
 既存のライブラリにある計算は，数学的な定義を書かず，そのライブラリの関数として置く。
 -/
 
 namespace Spec
-
-/-! ## メインの claim -/
-
-/-- 出力された MSE は 3400 を下回る。 -/
-abbrev C01 (outputTestMse : ℚ) : Prop := outputTestMse < 3400
 
 /-! ## 宣言 -/
 
@@ -155,12 +150,21 @@ def cpuArchitecture : String := "x86_64"
 abbrev C10 : Prop := pythonVersion = "3.13.3" ∧ operatingSystem = "ubuntu-24.04" ∧ cpuArchitecture = "x86_64"
 theorem C10_holds : C10 := ⟨rfl, rfl, rfl⟩
 
-/-! ## MSE を得る手順 -/
+/-! ## 宣言 -/
 
 /-- 宣言した手順で，MSE が値として定まる。
-- 宣言したデータセットを読み込み，分割し，当てはめ，予測し，MSE を計算すると，MSE が 1 つの有理数として定まる -/
-abbrev C02 : Prop := ∃ mse : ℚ, mse = specifiedTestMse
-theorem C02_holds : C02 := ⟨_, rfl⟩
+- データセット（C03）を読み込み（C04），分割し（C05），当てはめ（C06），予測し（C07），MSE を計算する（C08）
+- ライブラリの版（C09）と計算環境（C10）は，宣言のとおりとする
+- このとき，MSE が 1 つの有理数として定まる -/
+abbrev C02 : Prop :=
+  C03 → C04 → C05 → C06 → C07 → C08 → C09 → C10 → ∃ mse : ℚ, mse = specifiedTestMse
+theorem C02_holds : C02 := fun _ _ _ _ _ _ _ _ => ⟨_, rfl⟩
+
+/-! ## メインの claim -/
+
+/-- 宣言した手順で定まる MSE（C02）は，3400 を下回る。
+- 判定は，出力された MSE を 3400 と比べて行う。その判定を採用してよいことは，C00 が言う -/
+abbrev C01 : Prop := specifiedTestMse < 3400
 
 /-! ## 信頼性条件 -/
 
@@ -346,11 +350,11 @@ abbrev C39 (fullRunTestMses : List ℚ) (outputTestMse : ℚ) : Prop := ∀ mse 
 /-! ## C01 の判定の信頼性 -/
 
 /-- C01 の判定は，信頼性条件を満たす。
-- 出力された MSE での判定（C01）は，宣言したとおりに計算した MSE が 3400 を下回るかの判定と一致する（C14 から導く）
+- C01 の真偽は，出力された MSE が 3400 を下回るかどうかと一致する（C14 から導く）
 - HARKing をしていない（C38），チェリーピッキングをしていない（C39） -/
 abbrev C00 (outputTestMse : ℚ) (fullRunDeclarationSha256s : List String) (verifiedDeclarationSha256 : String)
     (fullRunTestMses : List ℚ) : Prop :=
-  (C01 outputTestMse ↔ specifiedTestMse < 3400) ∧
+  (C01 ↔ outputTestMse < 3400) ∧
   C38 fullRunDeclarationSha256s verifiedDeclarationSha256 ∧ C39 fullRunTestMses outputTestMse
 
 /-- C14，C38，C39 から C00 を導く。 -/
@@ -359,6 +363,20 @@ theorem C00_of_C14_C38_C39 (outputTestMse : ℚ) (fullRunDeclarationSha256s : Li
     C14 outputTestMse → C38 fullRunDeclarationSha256s verifiedDeclarationSha256 →
     C39 fullRunTestMses outputTestMse →
     C00 outputTestMse fullRunDeclarationSha256s verifiedDeclarationSha256 fullRunTestMses :=
-  fun c14 c38 c39 => ⟨by rw [← c14], c38, c39⟩
+  fun c14 c38 c39 => ⟨by rw [c14], c38, c39⟩
+
+/-- C00 と，出力された MSE が 3400 を下回ることから，C01 を導く。 -/
+theorem C01_of_C00 (outputTestMse : ℚ) (fullRunDeclarationSha256s : List String)
+    (verifiedDeclarationSha256 : String) (fullRunTestMses : List ℚ) :
+    C00 outputTestMse fullRunDeclarationSha256s verifiedDeclarationSha256 fullRunTestMses →
+    outputTestMse < 3400 → C01 :=
+  fun c00 below => c00.1.mpr below
+
+/-- C00 と，出力された MSE が 3400 を下回らないことから，C01 の否定を導く。 -/
+theorem not_C01_of_C00 (outputTestMse : ℚ) (fullRunDeclarationSha256s : List String)
+    (verifiedDeclarationSha256 : String) (fullRunTestMses : List ℚ) :
+    C00 outputTestMse fullRunDeclarationSha256s verifiedDeclarationSha256 fullRunTestMses →
+    ¬ outputTestMse < 3400 → ¬ C01 :=
+  fun c00 notBelow c01 => notBelow (c00.1.mp c01)
 
 end Spec

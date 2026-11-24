@@ -9,7 +9,8 @@
   "derived": {
     "C17": {"theorem": "C17_of_C11_C15_C16", "from": ["C11", "C15", "C16"]},
     "C14": {"theorem": "C14_of_C12_C13_C17_to_C37", "from": ["C12", "C13", "C17", "C18", "C19", "C20", "C21", "C22", "C23", "C24", "C25", "C26", "C27", "C28", "C29", "C30", "C31", "C32", "C33", "C34", "C35", "C36", "C37"]},
-    "C00": {"theorem": "C00_of_C14_C38_C39", "from": ["C14", "C38", "C39"]}
+    "C00": {"theorem": "C00_of_C14_C38_C39", "from": ["C14", "C38", "C39"]},
+    "C01": {"theorem": "C01_of_C00", "refutation": "not_C01_of_C00", "from": ["C00"], "by_comparison": true}
   },
   "variables": {
     "outputTestMse": {"type": "ℚ", "meaning": "出力された，テストデータに対する MSE", "verifier": "GitHub", "query": "experiment_output", "args": {"key": "testMse"}},
